@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ogene-50: #f9fafa;
+  --color-ogene-100: #f3f4f6;
+  --color-ogene-200: #e5e7eb;
+  --color-ogene-300: #d1d5db;
+  --color-ogene-400: #9ca3af;
+  --color-ogene-500: #6b7280;
+  --color-ogene-600: #4b5563;
+  --color-ogene-700: #374151;
+  --color-ogene-800: #1f2937;
+  --color-ogene-900: #111827;
+
+  --color-primary: #111827;
+  --color-primary-foreground: #ffffff;
+
+  --font-serif: Merriweather, serif;
+  --font-sans: Inter, sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  body {
+    @apply bg-ogene-50 text-ogene-900 antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom scrollbar for a premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
