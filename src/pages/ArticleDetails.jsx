@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import useUserStore from '../store/userStore';
-import { Button } from '../components/ui';
+import { Button, OgeneIcon } from '../components/ui';
 import { useAlert } from '../context/AlertContext';
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
-import { Lock, Download, CheckCircle, FileText, Heart, ArrowLeft, Bookmark } from 'lucide-react';
+import { Lock, Download, CheckCircle, FileText, ArrowLeft, Bookmark } from 'lucide-react';
 
 export default function ArticleDetails() {
     const { id } = useParams();
@@ -144,7 +144,7 @@ export default function ArticleDetails() {
         customizations: {
             title: 'OGENE Premium Subscription',
             description: 'Monthly access to all premium articles',
-            logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
+            logo: '/logo.svg',
         },
     };
 
@@ -315,10 +315,10 @@ export default function ArticleDetails() {
 
                                     <button
                                         onClick={toggleFavourite}
-                                        className={`p-3 rounded-full border transition-colors ${isFavourite ? 'bg-red-50 border-red-200 text-red-500 shadow-sm' : 'bg-white border-ogene-200 text-ogene-400 hover:text-red-500'}`}
+                                        className={`p-3 rounded-full border transition-colors ${isFavourite ? 'bg-[#78350f] border-[#78350f] text-white shadow-md' : 'bg-white border-ogene-200 text-ogene-400 hover:text-[#78350f]'}`}
                                         title={isFavourite ? "Remove from Favourites" : "Add to Favourites"}
                                     >
-                                        <Heart size={24} fill={isFavourite ? "currentColor" : "none"} />
+                                        <OgeneIcon size={24} fill={isFavourite ? "currentColor" : "none"} />
                                     </button>
 
                                     <div className="flex gap-2">

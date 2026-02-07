@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import useUserStore from '../store/userStore';
 import { Link } from 'react-router-dom';
-import { Heart, FileText, Trash2 } from 'lucide-react';
+import { FileText, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAlert } from '../context/AlertContext';
+import { OgeneIcon } from '../components/ui';
 
 export default function Favourites() {
     const { user } = useUserStore();
@@ -59,7 +60,7 @@ export default function Favourites() {
                 <div className="p-20 text-center text-ogene-500">Loading favourites...</div>
             ) : favourites.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-xl border border-ogene-100 shadow-sm">
-                    <Heart size={48} className="mx-auto text-ogene-300 mb-4" />
+                    <OgeneIcon size={48} className="mx-auto text-ogene-300 mb-4" />
                     <h3 className="text-xl font-medium text-ogene-900 mb-2">No favourites yet</h3>
                     <p className="text-ogene-500 mb-6">Save articles you love to read later.</p>
                     <Link to="/" className="text-ogene-900 font-bold underline">Browse Articles</Link>

@@ -29,7 +29,8 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-20">
                     <div className="flex items-center">
-                        <Link to="/" className="flex-shrink-0 flex items-center gap-2">
+                        <Link to="/" className="flex-shrink-0 flex items-center gap-3">
+                            <img src="/logo.svg" alt="OGENE Logo" className="h-10 w-10" />
                             <span className="text-3xl font-serif font-bold text-ogene-900 tracking-tighter">OGENE</span>
                         </Link>
 

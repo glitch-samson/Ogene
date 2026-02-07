@@ -59,3 +59,4 @@ export function Label({ className, children, ...props }) {
 
 export { default as Modal } from './Modal';
 export { default as ArticleCard } from './ArticleCard';
+export { default as OgeneIcon } from './OgeneIcon';

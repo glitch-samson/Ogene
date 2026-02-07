@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Bookmark } from 'lucide-react';
+import { Bookmark } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import useUserStore from '../../store/userStore';
 import { useAlert } from '../../context/AlertContext';
-import { cn } from './index';
+import { cn, OgeneIcon } from './index';
 
 export default function ArticleCard({ article }) {
     const { user } = useUserStore();
@@ -125,12 +125,12 @@ export default function ArticleCard({ article }) {
                     className={cn(
                         "p-2 rounded-full backdrop-blur-md shadow-lg transition-all border",
                         isFavourite
-                            ? "bg-red-500 border-red-500 text-white"
-                            : "bg-white/80 border-white text-ogene-400 hover:text-red-500"
+                            ? "bg-[#78350f] border-[#78350f] text-white"
+                            : "bg-white/80 border-white text-ogene-400 hover:text-[#78350f]"
                     )}
                     title={isFavourite ? "Remove from Favourites" : "Add to Favourites"}
                 >
-                    <Heart size={18} fill={isFavourite ? "currentColor" : "none"} />
+                    <OgeneIcon size={18} fill={isFavourite ? "currentColor" : "none"} />
                 </button>
             </div>
 

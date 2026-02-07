@@ -47,7 +47,7 @@ export default function Profile() {
         customizations: {
             title: 'OGENE Premium Subscription',
             description: 'Monthly access to all premium articles',
-            logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
+            logo: '/logo.svg',
         },
     };
 
