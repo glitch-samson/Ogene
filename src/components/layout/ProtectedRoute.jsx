@@ -14,6 +14,9 @@ export default function ProtectedRoute({ allowedRoles }) {
     }
 
     if (allowedRoles && (!profile || !allowedRoles.includes(profile.role))) {
+        if (user && !profile) {
+            return <div className="flex justify-center items-center py-20 text-ogene-500">Setting up your profile...</div>;
+        }
         return <Navigate to="/" replace />;
     }
 

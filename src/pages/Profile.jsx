@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import useUserStore from '../store/userStore';
 import { supabase } from '../lib/supabase';
 import { Button, Input, Label } from '../components/ui';
-import { User, Mail } from 'lucide-react';
+import { User, Mail, Crown, Star, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Profile() {
@@ -51,12 +51,56 @@ export default function Profile() {
                             <Mail size={14} />
                             {user?.email}
                         </p>
-                        <span className="inline-block mt-2 px-2 py-1 bg-ogene-100 text-ogene-700 text-xs rounded-full font-medium capitalize">
-                            {profile?.role || 'User'}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                            <span className="px-2 py-1 bg-ogene-100 text-ogene-700 text-xs rounded-full font-medium capitalize">
+                                {profile?.role || 'User'}
+                            </span>
+                            <span className={`px-2 py-1 text-xs rounded-full font-bold flex items-center gap-1 ${profile?.is_premium ? 'bg-ogene-900 text-white shadow-sm' : 'bg-ogene-50 text-ogene-400 border border-ogene-100'}`}>
+                                {profile?.is_premium ? (
+                                    <>
+                                        <Star size={12} fill="currentColor" />
+                                        Premium Member
+                                    </>
+                                ) : (
+                                    'Free Account'
+                                )}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
+                {profile?.is_premium && profile?.premium_until && (
+                    <div className="mb-8 p-4 bg-ogene-50 rounded-xl border border-ogene-100 flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-ogene-600 shadow-sm">
+                            <Calendar size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs text-ogene-500 font-medium uppercase tracking-wider">Subscription Renews On</p>
+                            <p className="text-ogene-900 font-bold">{new Date(profile.premium_until).toLocaleDateString(undefined, { dateStyle: 'long' })}</p>
+                        </div>
+                    </div>
+                )}
+
+                {!profile?.is_premium && profile?.role !== 'admin' && (
+                    <div className="mb-8 p-6 bg-gradient-to-r from-ogene-900 to-ogene-800 rounded-xl text-white shadow-lg overflow-hidden relative group">
+                        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Crown className="text-ogene-300" size={24} />
+                                <h3 className="text-xl font-serif font-bold">Try OGENE Premium</h3>
+                            </div>
+                            <p className="text-ogene-100 mb-6 max-w-sm">
+                                Unlock all premium articles and support authors for just ₦1,500/month.
+                            </p>
+                            <Button
+                                onClick={() => window.location.href = '/'}
+                                className="bg-white text-ogene-900 hover:bg-ogene-50 border-none font-bold"
+                            >
+                                Get Started
+                            </Button>
+                        </div>
+                    </div>
+                )}
                 <form onSubmit={handleUpdate} className="space-y-6 max-w-md">
                     {message && (
                         <div className={`p-3 rounded text-sm ${message.includes('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>

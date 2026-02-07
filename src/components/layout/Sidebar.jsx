@@ -33,8 +33,8 @@ export default function Sidebar() {
 
     const navItems = [
         { icon: Home, label: 'Home', path: '/' },
-        { icon: BookOpen, label: 'My Library', path: '/library', protected: true },
-        { icon: LayoutDashboard, label: 'Articles', path: '/browse', protected: true }, // Reusing LayoutDashboard or finding a better icon like Search/Grid
+        { icon: LayoutDashboard, label: 'Articles', path: '/browse', protected: true },
+        { icon: BookOpen, label: 'My Library', path: '/library', protected: true }, // Reusing LayoutDashboard or finding a better icon like Search/Grid
         { icon: Heart, label: 'Favourites', path: '/favourites', protected: true },
         { icon: LayoutDashboard, label: 'Admin', path: '/admin', admin: true },
         { icon: User, label: 'Profile', path: '/profile', protected: true },

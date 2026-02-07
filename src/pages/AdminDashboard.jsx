@@ -21,7 +21,7 @@ export default function AdminDashboard() {
     // Form State
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [price, setPrice] = useState('');
+    const [isPremium, setIsPremium] = useState(false);
     const [file, setFile] = useState(null);
     const [authorName, setAuthorName] = useState(''); // Changed to text input
     // const [authorId, setAuthorId] = useState(''); // Deprecated
@@ -45,15 +45,15 @@ export default function AdminDashboard() {
             if (articlesError) throw articlesError;
             setArticles(articlesData);
 
-            // 2. Fetch Purchases (Sales & Revenue)
-            const { data: purchasesData, error: purchasesError } = await supabase
-                .from('purchases')
-                .select('amount_paid');
+            // 2. Fetch Subscriptions (Sales & Revenue)
+            const { data: subscriptionsData, error: subsError } = await supabase
+                .from('subscriptions')
+                .select('amount');
 
-            if (purchasesError) throw purchasesError;
+            if (subsError) throw subsError;
 
-            const totalSales = purchasesData.length;
-            const totalRevenue = purchasesData.reduce((sum, item) => sum + (Number(item.amount_paid) || 0), 0);
+            const totalSales = subscriptionsData.length;
+            const totalRevenue = subscriptionsData.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
             // 3. Fetch Users for Stats AND Dropdown
             // Note: In real app with thousands of users, you'd want search/pagination.
@@ -71,9 +71,6 @@ export default function AdminDashboard() {
                 totalUsers: profilesData.length || 0
             });
 
-            // Default author to current admin
-            if (user && !authorId) setAuthorId(user.id);
-
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
         } finally {
@@ -84,7 +81,7 @@ export default function AdminDashboard() {
     const handleUpload = async (e) => {
         e.preventDefault();
         // Allow update if authorName is present (we might need to refine validation)
-        if (!title || !price) return;
+        if (!title) return;
 
         setUploading(true);
         try {
@@ -107,7 +104,8 @@ export default function AdminDashboard() {
             const articleData = {
                 title,
                 description,
-                price: parseFloat(price),
+                is_premium: isPremium,
+                price: isPremium ? 1500 : 0, // Backward compatibility or reference
                 author_name: authorName,
                 // Only update file_path if a new file was uploaded
                 ...(filePath && { file_path: filePath }),
@@ -139,7 +137,7 @@ export default function AdminDashboard() {
             // Reset form
             setTitle('');
             setDescription('');
-            setPrice('');
+            setIsPremium(false);
             setAuthorName('');
             setFile(null);
             setEditingId(null);
@@ -172,7 +170,7 @@ export default function AdminDashboard() {
         setEditingId(article.id);
         setTitle(article.title);
         setDescription(article.description || '');
-        setPrice(article.price);
+        setIsPremium(article.is_premium);
         setAuthorName(article.author_name || '');
         // We don't pre-fill file input as it's read-only
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -182,7 +180,7 @@ export default function AdminDashboard() {
         setEditingId(null);
         setTitle('');
         setDescription('');
-        setPrice('');
+        setIsPremium(false);
         setAuthorName('');
         setFile(null);
     };
@@ -249,9 +247,18 @@ export default function AdminDashboard() {
                                 />
                             </div>
 
-                            <div>
-                                <Label htmlFor="price">Price (NGN)</Label>
-                                <Input id="price" type="number" value={price} onChange={e => setPrice(e.target.value)} required placeholder="0.00" />
+                            <div className="flex items-center gap-3 p-3 bg-ogene-50 rounded-lg border border-ogene-100">
+                                <input
+                                    id="premium"
+                                    type="checkbox"
+                                    checked={isPremium}
+                                    onChange={e => setIsPremium(e.target.checked)}
+                                    className="h-5 w-5 rounded border-ogene-300 text-ogene-900 focus:ring-ogene-900 cursor-pointer"
+                                />
+                                <Label htmlFor="premium" className="mb-0 cursor-pointer select-none">
+                                    <span className="font-bold text-ogene-900">Premium Article</span>
+                                    <p className="text-xs text-ogene-500 font-normal">Requires ₦1,500/mo subscription to access</p>
+                                </Label>
                             </div>
 
                             <div>
@@ -296,9 +303,11 @@ export default function AdminDashboard() {
                                         <div>
                                             <h3 className="text-lg font-medium text-ogene-900">{article.title}</h3>
                                             <p className="text-sm text-ogene-500 mt-1">{article.description}</p>
-                                            <div className="flex items-center gap-4 mt-2 text-xs text-ogene-400">
-                                                <span>Price: ₦{article.price}</span>
-                                                <span>{new Date(article.created_at).toLocaleDateString()}</span>
+                                            <div className="flex items-center gap-4 mt-2 text-xs">
+                                                <span className={`px-2 py-0.5 rounded-full font-medium ${article.is_premium ? 'bg-ogene-900 text-white' : 'bg-ogene-100 text-ogene-700'}`}>
+                                                    {article.is_premium ? 'Premium' : 'Free'}
+                                                </span>
+                                                <span className="text-ogene-400">{new Date(article.created_at).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                         <div className="flex gap-2">

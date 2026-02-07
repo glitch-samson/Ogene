@@ -12,16 +12,14 @@ const useUserStore = create((set) => ({
 
         if (session?.user) {
             // Fetch profile
-            const { data: profile } = await supabase
+            let { data: profile } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', session.user.id)
                 .maybeSingle()
 
-            set({ user: session.user, profile: profile || null, loading: false })
-
             // If profile doesn't exist, create it (safe fallback)
-            if (!profile && session.user) {
+            if (!profile) {
                 const { data: newProfile } = await supabase
                     .from('profiles')
                     .insert([{
@@ -31,8 +29,10 @@ const useUserStore = create((set) => ({
                     .select()
                     .single();
 
-                if (newProfile) set({ profile: newProfile });
+                if (newProfile) profile = newProfile;
             }
+
+            set({ user: session.user, profile: profile || null, loading: false })
         } else {
             set({ user: null, profile: null, loading: false })
         }
@@ -40,11 +40,23 @@ const useUserStore = create((set) => ({
         // Listen for changes
         supabase.auth.onAuthStateChange(async (_event, session) => {
             if (session?.user) {
-                const { data: profile } = await supabase
+                let { data: profile } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', session.user.id)
-                    .single()
+                    .maybeSingle()
+
+                if (!profile) {
+                    const { data: newProfile } = await supabase
+                        .from('profiles')
+                        .insert([{
+                            id: session.user.id,
+                            full_name: session.user.user_metadata?.full_name
+                        }])
+                        .select()
+                        .single();
+                    if (newProfile) profile = newProfile;
+                }
                 set({ user: session.user, profile: profile || null, loading: false })
             } else {
                 set({ user: null, profile: null, loading: false })

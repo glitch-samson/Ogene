@@ -16,8 +16,9 @@ export default function ForgotPassword() {
         setMessage('');
 
         try {
+            const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/update-password`,
+                redirectTo: `${baseUrl}/update-password`,
             });
             if (error) throw error;
             setMessage('Check your email for the password reset link.');

@@ -79,8 +79,8 @@ export default function Articles() {
                                 </p>
                                 <div className="border-t border-ogene-50 pt-4 flex items-center justify-between mt-auto">
                                     <span className="text-xs text-ogene-500 font-medium">By {article.author_name || article.profiles?.full_name || 'Unknown'}</span>
-                                    <span className="text-lg font-bold text-ogene-900">
-                                        {article.price > 0 ? `₦${article.price}` : 'Free'}
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${article.is_premium ? 'bg-ogene-900 text-white' : 'bg-ogene-100 text-ogene-700'}`}>
+                                        {article.is_premium ? 'Premium' : 'Free'}
                                     </span>
                                 </div>
                             </div>

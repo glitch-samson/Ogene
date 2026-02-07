@@ -49,6 +49,18 @@ export default function ReadArticle() {
             // 2. Verify Access (Auth Only for Reading)
             // if (!user) return; // Handled by useEffect
 
+            // If premium, check subscription
+            if (art.is_premium) {
+                const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                const isPremium = profile?.role === 'admin' || (profile?.is_premium && profile?.premium_until && new Date(profile.premium_until) > new Date());
+
+                if (!isPremium) {
+                    alert("Please subscribe to OGENE Premium to read this article.");
+                    navigate(`/article/${id}`);
+                    return;
+                }
+            }
+
             // 3. Get Signed URL for the PDF
             if (art.file_path) {
                 const { data: signedData, error: signedError } = await supabase.storage

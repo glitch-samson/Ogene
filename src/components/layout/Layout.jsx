@@ -19,11 +19,6 @@ export default function Layout() {
             <div className="md:hidden bg-white/80 backdrop-blur-md h-16 border-b border-ogene-100 flex items-center justify-between px-4 sticky top-0 z-50">
                 <Link to="/" className="text-xl font-serif font-bold text-ogene-900 tracking-tighter">OGENE</Link>
                 <div className="flex items-center gap-2">
-                    {user && (
-                        <div className="h-8 w-8 rounded-full bg-ogene-100 flex items-center justify-center text-xs font-bold text-ogene-600">
-                            {profile?.full_name?.[0] || user.email[0].toUpperCase()}
-                        </div>
-                    )}
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         className="p-2 text-ogene-500 hover:bg-ogene-50 rounded-lg transition-colors"

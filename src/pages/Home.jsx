@@ -7,16 +7,16 @@ import { ArrowRight, BookOpen, ShieldCheck, Zap } from 'lucide-react';
 import { Button } from '../components/ui';
 
 export default function Home() {
-    const { user } = useUserStore();
+    const { user, profile } = useUserStore();
     const navigate = useNavigate();
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user) {
+        if (user && profile) {
             navigate('/library');
         }
-    }, [user, navigate]);
+    }, [user, profile, navigate]);
 
     useEffect(() => {
         const fetchArticles = async () => {
@@ -174,8 +174,8 @@ export default function Home() {
                                                     {article.author_name || article.profiles?.full_name || 'Unknown'}
                                                 </span>
                                             </div>
-                                            <span className="text-lg font-bold text-ogene-900">
-                                                {article.price > 0 ? `₦${article.price}` : 'Free'}
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${article.is_premium ? 'bg-ogene-900 text-white' : 'bg-ogene-100 text-ogene-700'}`}>
+                                                {article.is_premium ? 'Premium' : 'Free'}
                                             </span>
                                         </div>
                                     </div>
