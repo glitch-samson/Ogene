@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import useUserStore from '../store/userStore';
+import { useAlert } from '../context/AlertContext';
 import { supabase } from '../lib/supabase';
 import { Button, Input, Label } from '../components/ui';
 import { User, Mail, Crown, Star, Calendar } from 'lucide-react';
@@ -7,14 +8,13 @@ import { motion } from 'framer-motion';
 
 export default function Profile() {
     const { user, profile } = useUserStore();
+    const { success, error: showAlertError } = useAlert();
     const [fullName, setFullName] = useState(profile?.full_name || '');
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
 
     const handleUpdate = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage('');
 
         try {
             const { error } = await supabase
@@ -23,14 +23,13 @@ export default function Profile() {
                 .eq('id', user.id);
 
             if (error) throw error;
-            setMessage('Profile updated successfully!');
-        } catch (error) {
-            setMessage('Error updating profile: ' + error.message);
+            success('Your profile has been updated successfully.');
+        } catch (err) {
+            showAlertError(err.message || 'Error updating profile');
         } finally {
             setLoading(false);
         }
     };
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -102,12 +101,6 @@ export default function Profile() {
                     </div>
                 )}
                 <form onSubmit={handleUpdate} className="space-y-6 max-w-md">
-                    {message && (
-                        <div className={`p-3 rounded text-sm ${message.includes('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
-                            {message}
-                        </div>
-                    )}
-
                     <div>
                         <Label htmlFor="fullname">Full Name</Label>
                         <div className="relative">

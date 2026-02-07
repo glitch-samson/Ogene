@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAlert } from '../context/AlertContext';
 import { supabase } from '../lib/supabase';
 import { Button, Input, Label } from '../components/ui';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function UpdatePassword() {
+    const { success, error: showAlertError } = useAlert();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        setError('');
-        setMessage('');
 
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            showAlertError('Passwords do not match', 'Mismatch');
             setIsLoading(false);
             return;
         }
@@ -32,12 +30,12 @@ export default function UpdatePassword() {
 
             if (error) throw error;
 
-            setMessage('Password updated successfully!');
+            success('Password updated successfully!', 'Success');
             setTimeout(() => {
                 navigate('/login');
             }, 2000);
         } catch (err) {
-            setError(err.message || 'Failed to update password');
+            showAlertError(err.message || 'Failed to update password');
         } finally {
             setIsLoading(false);
         }
@@ -56,17 +54,6 @@ export default function UpdatePassword() {
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    {error && (
-                        <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 border border-red-200">
-                            {error}
-                        </div>
-                    )}
-                    {message && (
-                        <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 border border-green-200">
-                            {message}
-                        </div>
-                    )}
-
                     <div className="space-y-4">
                         <div>
                             <Label htmlFor="password">New Password</Label>

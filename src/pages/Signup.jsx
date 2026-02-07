@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useUserStore from '../store/userStore';
+import { useAlert } from '../context/AlertContext';
 import { Button, Input, Label } from '../components/ui';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -9,21 +10,20 @@ export default function Signup() {
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
+    const { error: showAlertError } = useAlert();
     const [isLoading, setIsLoading] = useState(false);
     const { signUp } = useUserStore();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         setIsLoading(true);
 
         try {
             await signUp(email, password, fullName);
             navigate('/'); // Redirect to home or verification page
         } catch (err) {
-            setError(err.message || 'Failed to sign up');
+            showAlertError(err.message || 'Failed to sign up', 'Sign Up Failed');
         } finally {
             setIsLoading(false);
         }
@@ -42,12 +42,6 @@ export default function Signup() {
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    {error && (
-                        <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 border border-red-200">
-                            {error}
-                        </div>
-                    )}
-
                     <div className="space-y-4">
                         <div>
                             <Label htmlFor="fullname">Full Name</Label>

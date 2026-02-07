@@ -56,3 +56,5 @@ export function Label({ className, children, ...props }) {
         </label>
     );
 }
+
+export { default as Modal } from './Modal';

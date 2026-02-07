@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAlert } from '../context/AlertContext';
 import { supabase } from '../lib/supabase';
 import { Button, Input, Label } from '../components/ui';
 
 export default function ForgotPassword() {
+    const { success, error: showAlertError } = useAlert();
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        setError('');
-        setMessage('');
 
         try {
             const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
@@ -21,9 +19,9 @@ export default function ForgotPassword() {
                 redirectTo: `${baseUrl}/update-password`,
             });
             if (error) throw error;
-            setMessage('Check your email for the password reset link.');
+            success('Check your email for the password reset link.', 'Email Sent');
         } catch (err) {
-            setError(err.message || 'Failed to send reset email');
+            showAlertError(err.message || 'Failed to send reset email');
         } finally {
             setIsLoading(false);
         }
@@ -42,17 +40,6 @@ export default function ForgotPassword() {
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    {error && (
-                        <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 border border-red-200">
-                            {error}
-                        </div>
-                    )}
-                    {message && (
-                        <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 border border-green-200">
-                            {message}
-                        </div>
-                    )}
-
                     <div className="space-y-4">
                         <div>
                             <Label htmlFor="email">Email address</Label>
