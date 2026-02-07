@@ -21,6 +21,7 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Favourites from './pages/Favourites';
 import ReadArticle from './pages/ReadArticle';
+import NotFound from './pages/NotFound';
 
 function App() {
   const initialize = useUserStore((state) => state.initialize);
@@ -64,6 +65,9 @@ function App() {
           <Route path="admin" element={<AdminDashboard />} />
         </Route>
       </Route>
+
+      {/* CATCH-ALL ROUTE */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
