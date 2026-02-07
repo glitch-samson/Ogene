@@ -10,7 +10,7 @@ export default function Signup() {
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const { error: showAlertError } = useAlert();
+    const { success, error: showAlertError } = useAlert();
     const [isLoading, setIsLoading] = useState(false);
     const { signUp } = useUserStore();
     const navigate = useNavigate();
@@ -21,7 +21,8 @@ export default function Signup() {
 
         try {
             await signUp(email, password, fullName);
-            navigate('/'); // Redirect to home or verification page
+            success('Please check your email and confirm your account before logging in.', 'Account Created');
+            navigate('/login'); // Redirect to login after showing message
         } catch (err) {
             showAlertError(err.message || 'Failed to sign up', 'Sign Up Failed');
         } finally {

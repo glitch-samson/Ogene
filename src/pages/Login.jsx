@@ -9,7 +9,7 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const { error: showAlertError } = useAlert();
+    const { success, error: showAlertError } = useAlert();
     const [isLoading, setIsLoading] = useState(false);
     const { signIn } = useUserStore();
     const navigate = useNavigate();
@@ -20,6 +20,7 @@ export default function Login() {
 
         try {
             await signIn(email, password);
+            success('Welcome back to OGENE!', 'Login Successful');
             navigate('/'); // Redirect to home on success
         } catch (err) {
             showAlertError(err.message || 'Failed to sign in', 'Authentication Failed');

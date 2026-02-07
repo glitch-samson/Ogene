@@ -9,36 +9,11 @@ import { Button, ArticleCard } from '../components/ui';
 export default function Home() {
     const { user, profile } = useUserStore();
     const navigate = useNavigate();
-    const [articles, setArticles] = useState([]);
-    const [loading, setLoading] = useState(true);
-
     useEffect(() => {
         if (user && profile) {
             navigate('/library');
         }
     }, [user, profile, navigate]);
-
-    useEffect(() => {
-        const fetchArticles = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('articles')
-                    .select('*, profiles(full_name)')
-                    .eq('is_public', true)
-                    .order('created_at', { ascending: false })
-                    .limit(6); // Limit to 6 for the landing page
-
-                if (error) throw error;
-                setArticles(data);
-            } catch (err) {
-                console.error('Error fetching articles:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchArticles();
-    }, []);
 
     const features = [
         {
@@ -83,9 +58,9 @@ export default function Home() {
                                     Get Started
                                 </Button>
                             </Link>
-                            <Link to="#featured">
+                            <Link to="#scholarly-foundations">
                                 <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-ogene-700 text-white hover:bg-ogene-800 hover:text-white backdrop-blur-sm">
-                                    Browse Articles
+                                    Our Mission
                                 </Button>
                             </Link>
                         </div>
@@ -122,37 +97,58 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* FEATURED ARTICLES SECTION */}
-            <section id="featured" className="py-24 bg-ogene-50/50">
+            {/* SCHOLARLY FOUNDATIONS SECTION */}
+            <section id="scholarly-foundations" className="py-24 bg-ogene-50/50 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-ogene-200 to-transparent"></div>
+
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between mb-12">
-                        <div>
-                            <h2 className="text-3xl font-serif font-bold text-ogene-900 mb-2">Featured Stories</h2>
-                            <p className="text-ogene-500">Latest publications from our top authors.</p>
-                        </div>
-                        <Link to="/library" className="hidden sm:flex items-center gap-2 text-ogene-700 font-medium hover:text-ogene-900 transition-colors">
-                            View All <ArrowRight size={18} />
-                        </Link>
-                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8 }}
+                            viewport={{ once: true }}
+                        >
+                            <h2 className="text-4xl md:text-5xl font-serif font-bold text-ogene-900 mb-8 leading-tight">
+                                Preserving the <span className="text-ogene-600">Ancestral Echo</span> through Modern Research
+                            </h2>
+                            <p className="text-xl text-ogene-700 mb-6 leading-relaxed">
+                                OGENE is more than just a platform; it's a digital library dedicated to the profound exploration of history, culture, and social thought.
+                            </p>
+                            <p className="text-lg text-ogene-500 mb-10 leading-relaxed">
+                                We believe that true progress is rooted in understanding our past. Our contributors dive deep into the archives of tradition to bring forth insights that resonate with the challenges of today.
+                            </p>
 
-                    {loading ? (
-                        <div className="text-center py-20 text-ogene-500">Loading articles...</div>
-                    ) : articles.length === 0 ? (
-                        <div className="text-center py-20 text-ogene-500 bg-white rounded-xl shadow-sm border border-ogene-100">
-                            <p className="text-lg">No articles published yet.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {articles.map((article) => (
-                                <ArticleCard key={article.id} article={article} />
-                            ))}
-                        </div>
-                    )}
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="p-4 border-l-4 border-ogene-900 bg-white shadow-sm">
+                                    <h4 className="font-bold text-ogene-900 mb-1">Authentic Voices</h4>
+                                    <p className="text-sm text-ogene-500">Unfiltered perspectives from original thinkers.</p>
+                                </div>
+                                <div className="p-4 border-l-4 border-ogene-700 bg-white shadow-sm">
+                                    <h4 className="font-bold text-ogene-900 mb-1">Cultural Depth</h4>
+                                    <p className="text-sm text-ogene-500">Exploring the nuances of our shared heritage.</p>
+                                </div>
+                            </div>
+                        </motion.div>
 
-                    <div className="mt-12 text-center sm:hidden">
-                        <Link to="/library">
-                            <Button variant="outline" className="w-full">View All Articles</Button>
-                        </Link>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.8 }}
+                            viewport={{ once: true }}
+                            className="relative"
+                        >
+                            <div className="rounded-3xl overflow-hidden shadow-2xl">
+                                <img
+                                    src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?q=80&w=2574&auto=format&fit=crop"
+                                    alt="African Heritage and Research"
+                                    className="w-full h-[500px] object-cover"
+                                />
+                            </div>
+                            <div className="absolute -bottom-6 -right-6 h-32 w-32 bg-ogene-900 rounded-2xl flex items-center justify-center text-white shadow-xl transform rotate-3">
+                                <span className="text-4xl font-serif font-bold">OGN</span>
+                            </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>

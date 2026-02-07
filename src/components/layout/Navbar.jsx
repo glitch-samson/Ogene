@@ -4,21 +4,27 @@ import useUserStore from '../../store/userStore';
 import { Menu, X, User } from 'lucide-react';
 import { Button } from '../ui';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAlert } from '../../context/AlertContext';
 
 export default function Navbar() {
     const { user, profile, signOut } = useUserStore();
+    const { success, error: showAlertError } = useAlert();
     const navigate = useNavigate();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
 
     const handleSignOut = async () => {
-        await signOut();
-        navigate('/');
+        try {
+            await signOut();
+            success('You have been signed out successfully.', 'Logout');
+            navigate('/');
+        } catch (err) {
+            showAlertError('Failed to sign out. Please try again.');
+        }
     };
 
     const navLinks = [
         { name: 'Home', path: '/' },
-        { name: 'Articles', path: '/articles' },
         { name: 'About Us', path: '/about' },
     ];
 
