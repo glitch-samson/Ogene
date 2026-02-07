@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, BookOpen, ShieldCheck, Zap } from 'lucide-react';
-import { Button } from '../components/ui';
+import { Button, ArticleCard } from '../components/ui';
 
 export default function Home() {
     const { user, profile } = useUserStore();
@@ -144,42 +144,7 @@ export default function Home() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {articles.map((article) => (
-                                <Link to={`/article/${article.id}`} key={article.id} className="bg-white rounded-xl shadow-sm border border-ogene-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer block h-full flex flex-col">
-                                    <div className="h-56 bg-ogene-200 w-full group-hover:bg-ogene-300 transition-colors flex items-center justify-center text-ogene-500 relative overflow-hidden">
-                                        {/* Fallback pattern */}
-                                        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-ogene-900 to-transparent"></div>
-                                        <span className="font-serif italic opacity-50 text-3xl z-10">OGENE</span>
-                                    </div>
-                                    <div className="p-6 flex-grow flex flex-col">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className="text-xs font-bold text-ogene-600 uppercase tracking-wider bg-ogene-50 px-2 py-1 rounded">
-                                                {article.category || 'Article'}
-                                            </div>
-                                            <span className="text-xs text-ogene-400 font-medium">{new Date(article.created_at).toLocaleDateString()}</span>
-                                        </div>
-
-                                        <h3 className="text-xl font-serif font-bold text-ogene-900 mb-3 line-clamp-2 group-hover:text-ogene-700 transition-colors">
-                                            {article.title}
-                                        </h3>
-                                        <p className="text-sm text-ogene-500 mb-6 line-clamp-3 flex-grow leading-relaxed">
-                                            {article.description}
-                                        </p>
-
-                                        <div className="border-t border-ogene-50 pt-4 flex items-center justify-between mt-auto">
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-8 w-8 rounded-full bg-ogene-100 flex items-center justify-center text-xs font-bold text-ogene-600">
-                                                    {(article.author_name?.[0] || article.profiles?.full_name?.[0] || 'U')}
-                                                </div>
-                                                <span className="text-xs font-medium text-ogene-600 truncate max-w-[120px]">
-                                                    {article.author_name || article.profiles?.full_name || 'Unknown'}
-                                                </span>
-                                            </div>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${article.is_premium ? 'bg-ogene-900 text-white' : 'bg-ogene-100 text-ogene-700'}`}>
-                                                {article.is_premium ? 'Premium' : 'Free'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </Link>
+                                <ArticleCard key={article.id} article={article} />
                             ))}
                         </div>
                     )}

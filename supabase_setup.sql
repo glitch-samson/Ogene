@@ -170,3 +170,25 @@ create policy "Users can add favourites" on favourites for insert with check (au
 
 drop policy if exists "Users can remove favourites" on favourites;
 create policy "Users can remove favourites" on favourites for delete using (auth.uid() = user_id);
+
+-- LIBRARY
+create table if not exists library (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references profiles(id) on delete cascade,
+  article_id uuid references articles(id) on delete cascade,
+  created_at timestamp with time zone default now(),
+  unique(user_id, article_id)
+);
+
+-- RLS for Library
+alter table library enable row level security;
+
+-- Policies for Library
+drop policy if exists "Users can view own library" on library;
+create policy "Users can view own library" on library for select using (auth.uid() = user_id);
+
+drop policy if exists "Users can add to library" on library;
+create policy "Users can add to library" on library for insert with check (auth.uid() = user_id);
+
+drop policy if exists "Users can remove from library" on library;
+create policy "Users can remove from library" on library for delete using (auth.uid() = user_id);

@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import useUserStore from '../store/userStore';
 import { Link } from 'react-router-dom';
-import { Heart, FileText } from 'lucide-react';
+import { Heart, FileText, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAlert } from '../context/AlertContext';
 
 export default function Favourites() {
     const { user } = useUserStore();
+    const { success, error: showAlertError, confirm } = useAlert();
     const [favourites, setFavourites] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -19,12 +21,12 @@ export default function Favourites() {
             const { data, error } = await supabase
                 .from('favourites')
                 .select(`
-            id,
-            articles (
-                *,
-                profiles (full_name)
-            )
-        `)
+                    id,
+                    articles (
+                        *,
+                        profiles (full_name)
+                    )
+                `)
                 .eq('user_id', user.id);
 
             if (error) throw error;
@@ -37,12 +39,16 @@ export default function Favourites() {
     };
 
     const removeFavourite = async (favId) => {
-        try {
-            await supabase.from('favourites').delete().eq('id', favId);
-            setFavourites(prev => prev.filter(f => f.id !== favId));
-        } catch (e) {
-            console.error(e);
-        }
+        confirm("Remove this article from your favourites?", async () => {
+            try {
+                const { error } = await supabase.from('favourites').delete().eq('id', favId);
+                if (error) throw error;
+                setFavourites(prev => prev.filter(f => f.id !== favId));
+                success("Removed from favourites");
+            } catch (err) {
+                showAlertError("Failed to remove favourite");
+            }
+        }, "Remove Favourite");
     };
 
     return (
@@ -69,9 +75,19 @@ export default function Favourites() {
                             <motion.div
                                 layout
                                 key={fav.id}
-                                className="bg-white rounded-xl shadow-sm border border-ogene-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col group"
+                                className="bg-white rounded-xl shadow-sm border border-ogene-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col group relative"
                             >
-                                <div className="h-40 bg-ogene-200 w-full group-hover:bg-ogene-300 transition-colors"></div>
+                                <button
+                                    onClick={() => removeFavourite(fav.id)}
+                                    className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm text-red-500 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all z-10"
+                                    title="Remove from Favourites"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                                <div className="h-40 bg-ogene-900 relative group-hover:bg-ogene-800 transition-colors flex items-center justify-center">
+                                    <span className="text-white/20 font-serif italic text-2xl">OGENE</span>
+                                </div>
+
                                 <div className="p-6 flex-grow">
                                     <h3 className="text-xl font-serif font-bold text-ogene-900 mb-2 line-clamp-2">
                                         <Link to={`/article/${article.id}`} className="hover:text-blue-600 transition-colors">
@@ -81,15 +97,13 @@ export default function Favourites() {
                                     <p className="text-sm text-ogene-500 line-clamp-3 mb-4">{article.description}</p>
                                     <p className="text-xs font-medium text-ogene-400">By {article.profiles?.full_name}</p>
                                 </div>
-                                <div className="bg-ogene-50 px-6 py-4 border-t border-ogene-100 flex justify-between items-center">
-                                    <span className="text-sm font-bold text-ogene-900">₦{article.price}</span>
-                                    <button
-                                        onClick={() => removeFavourite(fav.id)}
-                                        className="text-red-500 hover:text-red-700 p-2 hover:bg-white rounded-full transition-colors"
-                                        title="Remove from Favourites"
-                                    >
-                                        <Heart size={20} fill="currentColor" />
-                                    </button>
+                                <div className="bg-ogene-50 px-6 py-4 border-t border-ogene-100 flex justify-between items-center mt-auto">
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${article.is_premium ? 'bg-ogene-900 text-white' : 'bg-ogene-100 text-ogene-700'}`}>
+                                        {article.is_premium ? 'Premium' : 'Free'}
+                                    </span>
+                                    <Link to={`/article/${article.id}`}>
+                                        <span className="text-sm font-bold text-ogene-900 hover:underline">View Article</span>
+                                    </Link>
                                 </div>
                             </motion.div>
                         );

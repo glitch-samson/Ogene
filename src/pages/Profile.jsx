@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { Button, Input, Label } from '../components/ui';
 import { User, Mail, Crown, Star, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 
 export default function Profile() {
     const { user, profile } = useUserStore();
@@ -29,6 +30,83 @@ export default function Profile() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // FLUTTERWAVE CONFIG FOR SUBSCRIPTION
+    const config = {
+        public_key: import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || 'FLWPUBK_TEST-SANDBOX-DEMO-KEY-X',
+        tx_ref: `OGENE-SUB-${user?.id}-${Date.now()}`,
+        amount: 1500,
+        currency: 'NGN',
+        payment_options: 'card,mobilemoney,ussd',
+        customer: {
+            email: user?.email || 'guest@ogene.com',
+            phone_number: '07000000000',
+            name: fullName || profile?.full_name || user?.user_metadata?.full_name || 'Generic User',
+        },
+        customizations: {
+            title: 'OGENE Premium Subscription',
+            description: 'Monthly access to all premium articles',
+            logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
+        },
+    };
+
+    const handleFlutterwavePayment = useFlutterwave(config);
+
+    const onPayClick = () => {
+        handleFlutterwavePayment({
+            callback: async (response) => {
+                console.log('Payment Response:', response);
+                closePaymentModal();
+
+                if (response.status === "successful") {
+                    setLoading(true);
+                    try {
+                        const premium_until = new Date();
+                        premium_until.setDate(premium_until.getDate() + 30);
+
+                        // 1. Log Subscription
+                        const { error: subError } = await supabase.from('subscriptions').insert([
+                            {
+                                user_id: user.id,
+                                amount: 1500,
+                                start_date: new Date().toISOString(),
+                                end_date: premium_until.toISOString(),
+                                transaction_id: response.transaction_id.toString()
+                            }
+                        ]);
+
+                        if (subError) throw subError;
+
+                        // 2. Update Profile
+                        const { error: profileError } = await supabase
+                            .from('profiles')
+                            .update({
+                                is_premium: true,
+                                premium_until: premium_until.toISOString()
+                            })
+                            .eq('id', user.id);
+
+                        if (profileError) throw profileError;
+
+                        // Refresh store to reflect new profile state
+                        useUserStore.getState().initialize();
+
+                        success("Welcome to Premium! Your subscription is active for the next 30 days.", "Payment Successful");
+                    } catch (err) {
+                        console.error('Error recording subscription:', err);
+                        showAlertError("Payment was successful, but we had trouble updating your account. Please contact support with your transaction ID: " + response.transaction_id, "Activation Error");
+                    } finally {
+                        setLoading(false);
+                    }
+                } else {
+                    showAlertError("Payment was not successful. Please try again.", "Payment Failed");
+                }
+            },
+            onClose: () => {
+                console.log('Payment modal closed');
+            },
+        });
     };
     return (
         <motion.div
@@ -92,8 +170,9 @@ export default function Profile() {
                                 Unlock all premium articles and support authors for just ₦1,500/month.
                             </p>
                             <Button
-                                onClick={() => window.location.href = '/'}
+                                onClick={onPayClick}
                                 className="bg-white text-ogene-900 hover:bg-ogene-50 border-none font-bold"
+                                isLoading={loading}
                             >
                                 Get Started
                             </Button>

@@ -3,16 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import useUserStore from '../store/userStore';
 import { Button } from '../components/ui';
+import { useAlert } from '../context/AlertContext';
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
-import { Lock, Download, CheckCircle, FileText, Heart, ArrowLeft } from 'lucide-react';
+import { Lock, Download, CheckCircle, FileText, Heart, ArrowLeft, Bookmark } from 'lucide-react';
 
 export default function ArticleDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user, profile } = useUserStore();
+    const { success, error: showAlertError, info, warn } = useAlert();
     const [article, setArticle] = useState(null);
     const [isPremiumMember, setIsPremiumMember] = useState(false);
     const [isFavourite, setIsFavourite] = useState(false);
+    const [isInLibrary, setIsInLibrary] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -45,6 +48,15 @@ export default function ArticleDetails() {
                     .eq('article_id', id)
                     .single();
                 if (fav) setIsFavourite(true);
+
+                // 2c. Check Library Status
+                const { data: lib } = await supabase
+                    .from('library')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .eq('article_id', id)
+                    .single();
+                if (lib) setIsInLibrary(true);
             }
         } catch (error) {
             console.error('Error loading article:', error);
@@ -59,12 +71,39 @@ export default function ArticleDetails() {
             return;
         }
 
-        if (isFavourite) {
-            await supabase.from('favourites').delete().eq('user_id', user.id).eq('article_id', id);
-            setIsFavourite(false);
-        } else {
-            await supabase.from('favourites').insert([{ user_id: user.id, article_id: id }]);
-            setIsFavourite(true);
+        try {
+            if (isFavourite) {
+                await supabase.from('favourites').delete().eq('user_id', user.id).eq('article_id', id);
+                setIsFavourite(false);
+                success('Removed from favourites', 'Favourites');
+            } else {
+                await supabase.from('favourites').insert([{ user_id: user.id, article_id: id }]);
+                setIsFavourite(true);
+                success('Added to favourites', 'Favourites');
+            }
+        } catch (err) {
+            showAlertError('Failed to update favourites');
+        }
+    };
+
+    const toggleLibrary = async () => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+
+        try {
+            if (isInLibrary) {
+                await supabase.from('library').delete().eq('user_id', user.id).eq('article_id', id);
+                setIsInLibrary(false);
+                success('Removed from your library', 'Library');
+            } else {
+                await supabase.from('library').insert([{ user_id: user.id, article_id: id }]);
+                setIsInLibrary(true);
+                success('Added to your library', 'Library');
+            }
+        } catch (err) {
+            showAlertError('Failed to update library');
         }
     };
 
@@ -73,7 +112,7 @@ export default function ArticleDetails() {
 
         // Final security check: Ensure user can download
         if (article.is_premium && !isPremiumMember) {
-            alert("Please subscribe to OGENE Premium to download this article.");
+            warn("Please subscribe to OGENE Premium to download this article.", "Premium Required");
             return;
         }
 
@@ -83,7 +122,7 @@ export default function ArticleDetails() {
             .createSignedUrl(article.file_path, 60); // 60 seconds validity
 
         if (error) {
-            alert('Error downloading file');
+            showAlertError('Error generating secure download link');
             return;
         }
 
@@ -156,15 +195,15 @@ export default function ArticleDetails() {
                         // Refresh store to reflect new profile state
                         useUserStore.getState().initialize();
 
-                        alert("Welcome to Premium! Your subscription is active for the next 30 days.");
+                        success("Welcome to Premium! Your subscription is active for the next 30 days.", "Payment Successful");
                     } catch (err) {
                         console.error('Error recording subscription:', err);
-                        alert("Payment was successful, but we had trouble updating your account. Please contact support with your transaction ID: " + response.transaction_id);
+                        showAlertError("Payment was successful, but we had trouble updating your account. Please contact support with your transaction ID: " + response.transaction_id, "Activation Error");
                     } finally {
                         setLoading(false);
                     }
                 } else {
-                    alert("Payment was not successful. Please try again.");
+                    showAlertError("Payment was not successful. Please try again.", "Payment Failed");
                 }
             },
             onClose: () => {
@@ -267,8 +306,17 @@ export default function ArticleDetails() {
 
                                 <div className="flex items-center gap-4">
                                     <button
+                                        onClick={toggleLibrary}
+                                        className={`p-3 rounded-full border transition-colors ${isInLibrary ? 'bg-ogene-900 border-ogene-900 text-white shadow-md' : 'bg-white border-ogene-200 text-ogene-400 hover:text-ogene-900'}`}
+                                        title={isInLibrary ? "Remove from Library" : "Add to Library"}
+                                    >
+                                        <Bookmark size={24} fill={isInLibrary ? "currentColor" : "none"} />
+                                    </button>
+
+                                    <button
                                         onClick={toggleFavourite}
-                                        className={`p-3 rounded-full border transition-colors ${isFavourite ? 'bg-red-50 border-red-200 text-red-500' : 'bg-white border-ogene-200 text-ogene-400 hover:text-red-500'}`}
+                                        className={`p-3 rounded-full border transition-colors ${isFavourite ? 'bg-red-50 border-red-200 text-red-500 shadow-sm' : 'bg-white border-ogene-200 text-ogene-400 hover:text-red-500'}`}
+                                        title={isFavourite ? "Remove from Favourites" : "Add to Favourites"}
                                     >
                                         <Heart size={24} fill={isFavourite ? "currentColor" : "none"} />
                                     </button>
