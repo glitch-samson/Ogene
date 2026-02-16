@@ -57,6 +57,22 @@ export function Label({ className, children, ...props }) {
     );
 }
 
+export function Alert({ title, children, variant = 'info', className }) {
+    const variants = {
+        success: 'bg-green-50 text-green-800 border-green-200',
+        error: 'bg-red-50 text-red-800 border-red-200',
+        info: 'bg-ogene-50 text-ogene-800 border-ogene-200',
+        warning: 'bg-yellow-50 text-yellow-800 border-yellow-200'
+    };
+
+    return (
+        <div className={cn("p-4 rounded-lg border flex flex-col gap-1", variants[variant], className)} role="alert">
+            {title && <h4 className="font-bold text-sm tracking-tight">{title}</h4>}
+            <div className="text-sm leading-relaxed">{children}</div>
+        </div>
+    );
+}
+
 export { default as Modal } from './Modal';
 export { default as ArticleCard } from './ArticleCard';
 export { default as OgeneIcon } from './OgeneIcon';

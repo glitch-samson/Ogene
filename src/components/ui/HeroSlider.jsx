@@ -105,7 +105,8 @@ export default function HeroSlider() {
                 ))}
             </Swiper>
 
-            <style jsx global>{`
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .swiper-button-next, .swiper-button-prev {
                     color: white !important;
                     background: rgba(255, 255, 255, 0.1);
@@ -126,12 +127,12 @@ export default function HeroSlider() {
                     opacity: 0.5;
                 }
                 .swiper-pagination-bullet-active {
-                    background: #d4af37 !important; /* Adjust to match ogene-300 if possible */
+                    background: #d4af37 !important;
                     opacity: 1;
                     width: 24px;
                     border-radius: 4px;
                 }
-            `}</style>
+            `}} />
         </section>
     );
 }

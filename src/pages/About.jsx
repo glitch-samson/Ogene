@@ -249,7 +249,8 @@ export default function About() {
                     </div>
                 </div>
 
-                <style jsx global>{`
+                <style dangerouslySetInnerHTML={{
+                    __html: `
                     .swiper-button-next, .swiper-button-prev {
                         color: white !important;
                         background: rgba(255, 255, 255, 0.1);
@@ -272,7 +273,7 @@ export default function About() {
                     .swiper-pagination-bullet-active {
                         background: #d4af37 !important;
                     }
-                `}</style>
+                `}} />
             </section>
 
             {/* FINAL CTA */}
