@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, BookOpen, ShieldCheck, Zap } from 'lucide-react';
-import { Button, ArticleCard } from '../components/ui';
+import { Button, ArticleCard, HeroSlider } from '../components/ui';
 
 export default function Home() {
     const { user, profile } = useUserStore();
@@ -35,38 +35,8 @@ export default function Home() {
 
     return (
         <div className="flex flex-col min-h-screen">
-            {/* HER SECTION */}
-            <section className="relative bg-ogene-900 text-white overflow-hidden py-16 lg:py-32">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center opacity-20"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-ogene-900 via-ogene-900/80 to-transparent"></div>
-
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold mb-6 tracking-tight leading-tight">
-                            Voice of the <span className="text-ogene-300">Intellect</span>
-                        </h1>
-                        <p className="text-lg sm:text-xl md:text-2xl text-ogene-200 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed px-2">
-                            Discover deeply researched articles, support independent journalism, and expand your horizons with OGENE.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
-                            <Link to="/signup">
-                                <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full bg-white text-ogene-900 hover:bg-ogene-100 border-none shadow-lg hover:shadow-xl transition-all">
-                                    Get Started
-                                </Button>
-                            </Link>
-                            <Link to="#scholarly-foundations">
-                                <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-ogene-700 text-white hover:bg-ogene-800 hover:text-white backdrop-blur-sm">
-                                    Our Mission
-                                </Button>
-                            </Link>
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
+            {/* HERO SLIDER SECTION */}
+            <HeroSlider />
 
             {/* FEATURES SECTION */}
             <section className="py-20 bg-white">
