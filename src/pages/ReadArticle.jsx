@@ -52,7 +52,7 @@ export default function ReadArticle() {
             // If premium, check subscription
             if (art.is_premium) {
                 const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-                const isPremium = profile?.role === 'admin' || (profile?.is_premium && profile?.premium_until && new Date(profile.premium_until) > new Date());
+                const isPremium = useUserStore.getState().isPremiumMember(profile);
 
                 if (!isPremium) {
                     alert("Please subscribe to OGENE Premium to read this article.");

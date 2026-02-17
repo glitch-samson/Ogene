@@ -43,7 +43,7 @@ const slides = [
 
 export default function HeroSlider() {
     return (
-        <section className="relative w-full h-[600px] lg:h-[800px] bg-ogene-900 overflow-hidden">
+        <section className="relative w-full h-[500px] sm:h-[600px] lg:h-[800px] bg-ogene-900 overflow-hidden">
             <Swiper
                 spaceBetween={0}
                 centeredSlides={true}
@@ -56,7 +56,10 @@ export default function HeroSlider() {
                     clickable: true,
                     dynamicBullets: true,
                 }}
-                navigation={true}
+                navigation={{
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                }}
                 modules={[Autoplay, Pagination, Navigation, EffectFade]}
                 className="w-full h-full"
             >
@@ -78,22 +81,23 @@ export default function HeroSlider() {
                                     initial={{ opacity: 0, y: 30 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.8, delay: 0.2 }}
+                                    className="w-full"
                                 >
                                     <h1
-                                        className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold mb-6 tracking-tight leading-tight text-white"
+                                        className="text-3xl sm:text-5xl md:text-7xl font-serif font-bold mb-4 sm:mb-6 tracking-tight leading-tight text-white"
                                         dangerouslySetInnerHTML={{ __html: slide.title }}
                                     ></h1>
-                                    <p className="text-lg sm:text-xl md:text-2xl text-ogene-100 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed px-2">
+                                    <p className="text-base sm:text-xl md:text-2xl text-ogene-100 mb-6 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-4 sm:px-2">
                                         {slide.description}
                                     </p>
-                                    <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
-                                        <Link to={slide.btn1Link}>
-                                            <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full bg-white text-ogene-900 hover:bg-ogene-100 border-none shadow-lg hover:shadow-xl transition-all">
+                                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 max-w-sm mx-auto sm:max-w-none">
+                                        <Link to={slide.btn1Link} className="w-full sm:w-auto">
+                                            <Button size="lg" className="w-full h-12 sm:h-14 px-8 text-base sm:text-lg rounded-full bg-white text-ogene-900 hover:bg-ogene-100 border-none shadow-lg hover:shadow-xl transition-all">
                                                 {slide.btn1Text}
                                             </Button>
                                         </Link>
-                                        <Link to={slide.btn2Link}>
-                                            <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full border-white/30 text-white hover:bg-white/10 backdrop-blur-sm transition-all">
+                                        <Link to={slide.btn2Link} className="w-full sm:w-auto">
+                                            <Button size="lg" variant="outline" className="w-full h-12 sm:h-14 px-8 text-base sm:text-lg rounded-full border-white/30 text-white hover:bg-white/10 backdrop-blur-sm transition-all">
                                                 {slide.btn2Text}
                                             </Button>
                                         </Link>
@@ -103,6 +107,10 @@ export default function HeroSlider() {
                         </div>
                     </SwiperSlide>
                 ))}
+
+                {/* Navigation Buttons - Hidden on mobile */}
+                <div className="swiper-button-prev !hidden md:!flex"></div>
+                <div className="swiper-button-next !hidden md:!flex"></div>
             </Swiper>
 
             <style dangerouslySetInnerHTML={{
@@ -115,6 +123,12 @@ export default function HeroSlider() {
                     border-radius: 50%;
                     backdrop-filter: blur(4px);
                     transition: all 0.3s ease;
+                    display: none !important;
+                }
+                @media (min-width: 768px) {
+                    .swiper-button-next, .swiper-button-prev {
+                        display: flex !important;
+                    }
                 }
                 .swiper-button-next:after, .swiper-button-prev:after {
                     font-size: 20px !important;
@@ -131,6 +145,11 @@ export default function HeroSlider() {
                     opacity: 1;
                     width: 24px;
                     border-radius: 4px;
+                }
+                
+                /* Ensure pagination is always visible but doesn't overlap content on small height screens */
+                .swiper-pagination {
+                    bottom: 20px !important;
                 }
             `}} />
         </section>

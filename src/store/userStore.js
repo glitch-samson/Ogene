@@ -92,6 +92,13 @@ const useUserStore = create((set) => ({
     signOut: async () => {
         await supabase.auth.signOut()
         set({ user: null, profile: null })
+    },
+
+    // Helper to check premium status
+    isPremiumMember: (profile) => {
+        if (!profile) return false;
+        if (profile.role === 'admin') return true;
+        return !!(profile.is_premium && profile.premium_until && new Date(profile.premium_until) > new Date());
     }
 }))
 

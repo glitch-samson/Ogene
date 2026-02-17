@@ -36,8 +36,8 @@ export default function ArticleDetails() {
             setArticle(art);
 
             if (user && profile) {
-                // 2a. Check Premium Membership Status
-                const isPremium = profile.role === 'admin' || (profile.is_premium && profile.premium_until && new Date(profile.premium_until) > new Date());
+                // 2a. Check Premium Membership Status using centralized helper
+                const isPremium = useUserStore.getState().isPremiumMember(profile);
                 setIsPremiumMember(isPremium);
 
                 // 2b. Check Favourite Status

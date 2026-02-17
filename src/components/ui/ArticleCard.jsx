@@ -102,80 +102,82 @@ export default function ArticleCard({ article }) {
     return (
         <Link
             to={`/article/${article.id}`}
-            className="bg-white rounded-2xl shadow-sm border border-ogene-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer block h-full flex flex-col relative"
+            className="bg-white rounded-2xl shadow-sm border border-ogene-100/60 overflow-hidden hover:shadow-xl hover:shadow-ogene-900/5 hover:-translate-y-0.5 transition-all duration-500 group cursor-pointer block h-full flex flex-col relative"
         >
-            {/* Action Icons */}
-            <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Action Icons - Compact for smaller cards */}
+            <div className="absolute top-2.5 right-2.5 z-20 flex flex-col gap-1.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300">
                 <button
                     onClick={toggleLibrary}
                     disabled={loading}
                     className={cn(
-                        "p-2 rounded-full backdrop-blur-md shadow-lg transition-all border",
+                        "p-1.5 rounded-full backdrop-blur-md shadow-md transition-all border",
                         isInLibrary
                             ? "bg-ogene-900 border-ogene-900 text-white"
-                            : "bg-white/80 border-white text-ogene-400 hover:text-ogene-900"
+                            : "bg-white/90 border-white text-ogene-400 hover:text-ogene-900 active:scale-95"
                     )}
                     title={isInLibrary ? "Remove from Library" : "Add to Library"}
                 >
-                    <Bookmark size={18} fill={isInLibrary ? "currentColor" : "none"} />
+                    <Bookmark size={14} fill={isInLibrary ? "currentColor" : "none"} />
                 </button>
                 <button
                     onClick={toggleFavourite}
                     disabled={loading}
                     className={cn(
-                        "p-2 rounded-full backdrop-blur-md shadow-lg transition-all border",
+                        "p-1.5 rounded-full backdrop-blur-md shadow-md transition-all border",
                         isFavourite
                             ? "bg-[#78350f] border-[#78350f] text-white"
-                            : "bg-white/80 border-white text-ogene-400 hover:text-[#78350f]"
+                            : "bg-white/90 border-white text-ogene-400 hover:text-[#78350f] active:scale-95"
                     )}
                     title={isFavourite ? "Remove from Favourites" : "Add to Favourites"}
                 >
-                    <OgeneIcon size={18} fill={isFavourite ? "currentColor" : "none"} />
+                    <OgeneIcon size={14} fill={isFavourite ? "currentColor" : "none"} />
                 </button>
             </div>
 
-            {/* Card Image Area */}
-            <div className="h-48 bg-ogene-900 w-full group-hover:bg-ogene-800 transition-colors flex items-center justify-center text-ogene-50/20 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
-                <span className="font-serif italic text-2xl z-10 select-none tracking-widest">OGENE</span>
+            {/* Compact Card Image Area */}
+            <div className="h-28 sm:h-36 bg-ogene-900 w-full group-hover:bg-ogene-950 transition-colors duration-700 flex items-center justify-center text-ogene-50/10 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-ogene-100/20 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+
+                <span className="font-serif italic text-xl z-10 select-none tracking-[0.2em] transform group-hover:scale-110 transition-transform duration-1000">OGENE</span>
 
                 {article.is_premium && (
-                    <div className="absolute bottom-4 left-4 z-10 px-2 py-1 bg-ogene-900/40 backdrop-blur-md border border-white/10 rounded text-[10px] font-bold text-white uppercase tracking-widest">
+                    <div className="absolute bottom-2.5 left-2.5 z-10 px-2 py-1.5 bg-ogene-900/60 backdrop-blur-xl border border-white/20 rounded-md text-[8px] font-bold text-white uppercase tracking-wider shadow-lg">
                         Premium
                     </div>
                 )}
             </div>
 
-            {/* Content Area */}
-            <div className="p-5 flex-grow flex flex-col">
-                <div className="flex items-center justify-between mb-3">
-                    <div className="text-[10px] font-bold text-ogene-500 uppercase tracking-widest bg-ogene-50 px-2 py-1 rounded">
-                        {article.category || 'Opinion'}
+            {/* Compact Content Area */}
+            <div className="p-3.5 sm:p-4 flex-grow flex flex-col">
+                <div className="flex items-center justify-between mb-2">
+                    <div className="text-[8px] font-bold text-ogene-600 uppercase tracking-wider bg-ogene-50/80 px-1.5 py-0.5 rounded border border-ogene-100/50">
+                        {article.category || 'Thought'}
                     </div>
-                    <span className="text-[10px] text-ogene-400 font-medium">
-                        {new Date(article.created_at).toLocaleDateString()}
+                    <span className="text-[9px] text-ogene-400 font-semibold">
+                        {new Date(article.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </span>
                 </div>
 
-                <h3 className="text-lg font-serif font-bold text-ogene-900 mb-2 line-clamp-2 group-hover:text-ogene-700 transition-colors">
+                <h3 className="text-sm sm:text-base font-serif font-bold text-ogene-900 mb-1.5 line-clamp-2 leading-tight group-hover:text-ogene-700 transition-colors">
                     {article.title}
                 </h3>
 
-                <p className="text-xs text-ogene-500 mb-6 line-clamp-3 flex-grow leading-relaxed italic">
+                <p className="text-[11px] sm:text-xs text-ogene-500/80 mb-4 line-clamp-2 flex-grow leading-relaxed font-light">
                     {article.description}
                 </p>
 
-                <div className="pt-4 border-t border-ogene-50 flex items-center justify-between mt-auto">
+                <div className="pt-3 border-t border-ogene-50/80 flex items-center justify-between mt-auto">
                     <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-full bg-ogene-100 flex items-center justify-center text-[10px] font-bold text-ogene-600 border border-ogene-200">
+                        <div className="h-6 w-6 rounded-full bg-ogene-50 flex items-center justify-center text-[8px] font-bold text-ogene-700 border border-ogene-100">
                             {(article.author_name?.[0] || article.profiles?.full_name?.[0] || 'U')}
                         </div>
-                        <span className="text-[10px] font-bold text-ogene-600 truncate max-w-[100px]">
-                            {article.author_name || article.profiles?.full_name || 'Unknown Author'}
+                        <span className="text-[10px] font-bold text-ogene-800 truncate max-w-[80px]">
+                            {article.author_name || article.profiles?.full_name || 'Anonymous'}
                         </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                        <span className="text-[10px] font-black text-ogene-900">READ MORE</span>
+                    <div className="flex items-center gap-1 text-ogene-900 group/btn">
+                        <span className="text-[8px] font-black tracking-widest transition-all">READ</span>
                     </div>
                 </div>
             </div>
