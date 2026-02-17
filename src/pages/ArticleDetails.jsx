@@ -219,58 +219,58 @@ export default function ArticleDetails() {
     const showGate = article.is_premium && !isPremiumMember;
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-8 md:py-12 relative">
+        <div className="max-w-4xl mx-auto px-4 py-6 md:py-12 relative">
             {/* Back Button */}
-            <div className="mb-6">
+            <div className="mb-4 md:mb-6">
                 <Button
                     variant="ghost"
                     onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-ogene-600 hover:text-ogene-900 transition-colors"
+                    className="flex items-center gap-2 text-ogene-600 hover:text-ogene-900 transition-colors p-0 md:px-4"
                 >
-                    <ArrowLeft size={20} />
-                    Back to Catalog
+                    <ArrowLeft size={18} />
+                    <span className="text-sm font-medium">Back to Catalog</span>
                 </Button>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-ogene-100 overflow-hidden">
-                <div className="h-64 bg-ogene-900 relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
-                        <div>
-                            <div className="flex items-center gap-2 text-ogene-300 text-sm mb-2 font-medium">
-                                <span className={`px-2 py-1 rounded backdrop-blur-sm ${article.is_premium ? 'bg-ogene-600 text-white' : 'bg-white/10 text-ogene-200'}`}>
+            <div className="bg-white rounded-3xl shadow-sm border border-ogene-100 overflow-hidden">
+                <div className="h-48 md:h-64 bg-ogene-900 relative">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-end p-6 md:p-10">
+                        <div className="w-full">
+                            <div className="flex items-center gap-2 text-ogene-300 text-[10px] md:text-xs mb-2 md:mb-3 font-bold uppercase tracking-widest">
+                                <span className={`px-2 py-0.5 rounded-full ${article.is_premium ? 'bg-ogene-600 text-white' : 'bg-white/10 text-ogene-100'}`}>
                                     {article.is_premium ? 'Premium' : 'Free'}
                                 </span>
-                                <span>•</span>
-                                <span>{new Date(article.created_at).toLocaleDateString()}</span>
+                                <span className="opacity-40">•</span>
+                                <span>{new Date(article.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
                             </div>
-                            <h1 className="text-4xl font-serif font-bold text-white mb-2">{article.title}</h1>
-                            <p className="text-ogene-200">By {article.author_name || article.profiles?.full_name || 'Unknown Author'}</p>
+                            <h1 className="text-2xl md:text-4xl font-serif font-bold text-white mb-2 leading-tight">{article.title}</h1>
+                            <p className="text-ogene-200/80 text-sm md:text-base font-medium italic">By {article.author_name || article.profiles?.full_name || 'Unknown Author'}</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="p-8 md:p-12">
+                <div className="p-5 md:p-12">
                     {showGate ? (
-                        <div className="py-12 text-center">
+                        <div className="py-8 md:py-12 text-center">
                             <div className="max-w-md mx-auto">
-                                <div className="h-20 w-20 bg-ogene-50 rounded-full flex items-center justify-center mx-auto mb-6 text-ogene-900 border border-ogene-100 shadow-sm">
-                                    <Lock size={32} />
+                                <div className="h-16 w-16 md:h-20 md:w-20 bg-ogene-50 rounded-full flex items-center justify-center mx-auto mb-6 text-ogene-900 border border-ogene-100 shadow-sm">
+                                    <Lock size={28} />
                                 </div>
-                                <h2 className="text-2xl font-serif font-bold text-ogene-900 mb-4">Premium Membership Required</h2>
-                                <p className="text-ogene-500 mb-8 leading-relaxed">
+                                <h2 className="text-xl md:text-2xl font-serif font-bold text-ogene-900 mb-3">Premium Required</h2>
+                                <p className="text-ogene-500 text-sm md:text-base mb-8 leading-relaxed px-4">
                                     This article is exclusive to OGENE Premium members. Unlock full access to all premium articles for just ₦1,500/month.
                                 </p>
 
-                                <div className="space-y-4">
+                                <div className="space-y-4 px-4">
                                     <Button
                                         size="lg"
-                                        className="w-full h-14 text-lg rounded-xl bg-ogene-900 text-white hover:bg-ogene-800 shadow-lg active:scale-[0.98] transition-all"
+                                        className="w-full h-14 text-lg rounded-2xl bg-ogene-900 text-white hover:bg-ogene-800 shadow-xl active:scale-[0.98] transition-all"
                                         onClick={onPayClick}
                                     >
-                                        Go Premium — ₦1,500/mo
+                                        Go Premium — ₦1,500
                                     </Button>
                                     {!user && (
-                                        <p className="text-sm text-ogene-400">
+                                        <p className="text-xs md:text-sm text-ogene-400">
                                             Already a member? <button onClick={() => navigate('/login')} className="text-ogene-900 font-bold hover:underline">Sign in</button>
                                         </p>
                                     )}
@@ -279,57 +279,70 @@ export default function ArticleDetails() {
                         </div>
                     ) : (
                         <>
-                            <div className="prose prose-lg max-w-none mb-12 text-ogene-700">
-                                <h3 className="text-xl font-bold text-ogene-900 mb-4">About this Article</h3>
-                                <p>{article.description}</p>
+                            <div className="prose prose-ogene max-w-none mb-10 md:mb-12">
+                                <h3 className="text-lg md:text-xl font-bold text-ogene-900 mb-4 border-l-4 border-ogene-600 pl-4">About this Article</h3>
+                                <p className="text-ogene-700 leading-relaxed text-sm md:text-base opacity-90">{article.description}</p>
                                 {!article.is_premium && (
-                                    <p className="italic text-ogene-500 mt-4">
-                                        (This is a free article. You have full access to view, read, and download.)
-                                    </p>
+                                    <div className="mt-6 p-4 bg-ogene-50/50 rounded-xl border border-ogene-100/50 text-xs md:text-sm italic text-ogene-600">
+                                        This is a free article. You have full access to view, read, and download.
+                                    </div>
                                 )}
                             </div>
 
-                            <div className="bg-ogene-50 rounded-xl p-8 border border-ogene-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="bg-ogene-50 rounded-2xl p-5 md:p-8 border border-ogene-100 space-y-6 md:space-y-0 md:flex md:items-center md:justify-between md:gap-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center shadow-sm text-ogene-900">
-                                        {!article.is_premium || isPremiumMember ? <CheckCircle size={24} className="text-green-500" /> : <Lock size={24} />}
+                                    <div className="h-10 w-10 md:h-12 md:w-12 bg-white rounded-full flex items-center justify-center shadow-sm text-ogene-900 shrink-0">
+                                        {!article.is_premium || isPremiumMember ? <CheckCircle size={20} className="text-green-600" /> : <Lock size={20} />}
                                     </div>
                                     <div>
-                                        <p className="text-lg font-bold text-ogene-900">
-                                            {!article.is_premium || isPremiumMember ? 'Unlocked' : `Premium Content`}
+                                        <p className="text-base md:text-lg font-bold text-ogene-900">
+                                            {!article.is_premium || isPremiumMember ? 'Full Access Unlocked' : `Premium Content`}
                                         </p>
-                                        <p className="text-sm text-ogene-500">
-                                            {!article.is_premium || isPremiumMember ? 'You have full access to this article.' : `Subscribe to OGENE Premium to unlock.`}
+                                        <p className="text-xs md:text-sm text-ogene-500">
+                                            {!article.is_premium || isPremiumMember ? 'Enjoy reading and downloading.' : `Subscribe to OGENE Premium to unlock.`}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        onClick={toggleLibrary}
-                                        className={`p-3 rounded-full border transition-colors ${isInLibrary ? 'bg-ogene-900 border-ogene-900 text-white shadow-md' : 'bg-white border-ogene-200 text-ogene-400 hover:text-ogene-900'}`}
-                                        title={isInLibrary ? "Remove from Library" : "Add to Library"}
-                                    >
-                                        <Bookmark size={24} fill={isInLibrary ? "currentColor" : "none"} />
-                                    </button>
+                                <div className="flex flex-col md:flex-row items-center gap-4">
+                                    <div className="flex items-center gap-3 w-full md:w-auto">
+                                        <button
+                                            onClick={toggleLibrary}
+                                            className={`flex-1 md:flex-none p-3.5 md:p-3 rounded-xl border transition-all flex items-center justify-center gap-2 ${isInLibrary ? 'bg-ogene-900 border-ogene-900 text-white shadow-md' : 'bg-white border-ogene-200 text-ogene-400 hover:text-ogene-900'}`}
+                                            title={isInLibrary ? "Remove from Library" : "Add to Library"}
+                                        >
+                                            <Bookmark size={20} fill={isInLibrary ? "currentColor" : "none"} />
+                                            <span className="md:hidden text-xs font-bold uppercase tracking-wider">Library</span>
+                                        </button>
 
-                                    <button
-                                        onClick={toggleFavourite}
-                                        className={`p-3 rounded-full border transition-colors ${isFavourite ? 'bg-[#78350f] border-[#78350f] text-white shadow-md' : 'bg-white border-ogene-200 text-ogene-400 hover:text-[#78350f]'}`}
-                                        title={isFavourite ? "Remove from Favourites" : "Add to Favourites"}
-                                    >
-                                        <OgeneIcon size={24} fill={isFavourite ? "currentColor" : "none"} />
-                                    </button>
+                                        <button
+                                            onClick={toggleFavourite}
+                                            className={`flex-1 md:flex-none p-3.5 md:p-3 rounded-xl border transition-all flex items-center justify-center gap-2 ${isFavourite ? 'bg-[#78350f] border-[#78350f] text-white shadow-md' : 'bg-white border-ogene-200 text-ogene-400 hover:text-[#78350f]'}`}
+                                            title={isFavourite ? "Remove from Favourites" : "Add to Favourites"}
+                                        >
+                                            <OgeneIcon size={20} fill={isFavourite ? "currentColor" : "none"} />
+                                            <span className="md:hidden text-xs font-bold uppercase tracking-wider">Favourite</span>
+                                        </button>
+                                    </div>
 
-                                    <div className="flex gap-2">
-                                        <Button size="lg" onClick={() => navigate(`/read/${id}`)} variant="outline" className="gap-2">
-                                            <FileText size={20} />
-                                            Read Now
+                                    <div className="grid grid-cols-2 gap-3 w-full md:flex md:w-auto">
+                                        <Button
+                                            size="lg"
+                                            onClick={() => navigate(`/read/${id}`)}
+                                            variant="outline"
+                                            className="flex items-center justify-center gap-2 h-12 md:h-12 rounded-xl text-xs font-bold uppercase tracking-widest"
+                                        >
+                                            <FileText size={18} />
+                                            Read
                                         </Button>
 
-                                        <Button size="lg" onClick={handleDownload} className="gap-2">
-                                            <Download size={20} />
-                                            Download PDF
+                                        <Button
+                                            size="lg"
+                                            onClick={handleDownload}
+                                            className="flex items-center justify-center gap-2 h-12 md:h-12 rounded-xl text-xs font-bold uppercase tracking-widest bg-ogene-900 text-white hover:bg-ogene-800"
+                                        >
+                                            <Download size={18} />
+                                            PDF
                                         </Button>
                                     </div>
                                 </div>
