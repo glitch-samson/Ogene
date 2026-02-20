@@ -4,6 +4,7 @@ import useUserStore from '../store/userStore';
 import { useAlert } from '../context/AlertContext';
 import { Button, Input, Label } from '../components/ui';
 import { Eye, EyeOff } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -62,7 +63,7 @@ export default function Login() {
 
             <div className="w-full max-w-6xl bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] overflow-hidden flex flex-col md:flex-row min-h-[700px] border border-white">
                 {/* Left Side - Premium Visual Storytelling */}
-                <div className="w-full md:w-5/12 bg-ogene-900 text-white p-10 md:p-16 flex flex-col justify-between relative overflow-hidden">
+                <div className="hidden md:flex w-full md:w-5/12 bg-ogene-900 text-white p-10 md:p-16 flex-col justify-between relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
                     <div className="absolute inset-0 bg-gradient-to-br from-ogene-800 via-transparent to-ogene-950 opacity-90"></div>
 
