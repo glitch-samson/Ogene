@@ -92,7 +92,7 @@ export default function Signup() {
                 Home
             </Link>
 
-            <div className="w-full max-w-6xl bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] overflow-hidden flex flex-col md:flex-row min-h-[700px] border border-white">
+            <div className="w-full max-w-6xl bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] overflow-y-auto md:overflow-hidden flex flex-col md:flex-row md:min-h-[700px] border border-white relative">
                 {/* Left Side - Premium Visual Storytelling */}
                 <div className="hidden md:flex w-full md:w-5/12 bg-ogene-900 text-white p-10 md:p-16 flex-col justify-between relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
@@ -131,9 +131,9 @@ export default function Signup() {
                 </div>
 
                 {/* Right Side - Signup Form */}
-                <div className="w-full md:w-7/12 bg-white p-8 md:p-20 flex flex-col justify-center relative">
-                    <div className="max-w-md mx-auto w-full">
-                        <div className="mb-10 text-center md:text-left">
+                <div className="w-full md:w-7/12 bg-white p-8 md:p-20 flex flex-col justify-center relative min-h-[600px] md:min-h-0">
+                    <div className="max-w-md mx-auto w-full flex-1 flex flex-col justify-center">
+                        <div className="mb-10 text-center md:text-left pt-10 md:pt-0">
                             <h2 className="text-3xl md:text-4xl font-serif font-black text-ogene-900 mb-3 tracking-tight">Create Account</h2>
                             <p className="text-ogene-500 font-medium">Start your journey as a member of OGENE</p>
                         </div>
@@ -212,7 +212,7 @@ export default function Signup() {
                                 </div>
                             </div>
 
-                            <div className="text-center">
+                            <div className="text-center mb-10">
                                 <Link to="/login" className="inline-flex items-center gap-2 group">
                                     <span className="text-sm font-bold text-ogene-500">Welcome back</span>
                                     <span className="h-8 px-4 flex items-center bg-ogene-50 text-ogene-900 text-xs font-black uppercase tracking-widest rounded-full group-hover:bg-ogene-900 group-hover:text-white transition-all">Sign In</span>
@@ -222,7 +222,7 @@ export default function Signup() {
                     </div>
 
                     {/* Footer text */}
-                    <p className="absolute bottom-8 left-0 right-0 text-center text-[10px] font-bold text-ogene-300 uppercase tracking-[0.3em] px-8">
+                    <p className="md:absolute md:bottom-8 md:left-0 md:right-0 text-center text-[10px] font-bold text-ogene-300 uppercase tracking-[0.3em] px-8 pb-8 md:pb-0">
                         © 2026 OGENE Digital Archives. All Rights Reserved.
                     </p>
                 </div>
