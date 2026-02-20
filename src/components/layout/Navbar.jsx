@@ -59,65 +59,87 @@ export default function Navbar() {
     }, [scrolled]);
 
     return (
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md border-b border-ogene-100 shadow-sm' : 'bg-transparent border-transparent'}`}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-20 relative">
+        <nav
+            className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-[calc(100%-2rem)] max-w-7xl 
+            ${scrolled
+                    ? 'bg-white/70 backdrop-blur-lg border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-3xl py-1'
+                    : 'bg-transparent border-transparent py-4'}`}
+        >
+            <div className="px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center h-14 md:h-16 relative">
                     {/* Logo - Left */}
                     <div className="flex-shrink-0 flex items-center">
-                        <Link to="/" className="flex items-center gap-3">
-                            <img src="/logo.svg" alt="OGENE Logo" className="h-10 w-10" />
-                            <span className="text-3xl font-serif font-bold text-ogene-900 tracking-tighter">OGENE</span>
+                        <Link to="/" className="flex items-center gap-2 group">
+                            <div className="relative">
+                                <img src="/logo.svg" alt="OGENE Logo" className="h-8 w-8 md:h-10 md:w-10 transition-transform duration-500 group-hover:rotate-[360deg]" />
+                                <div className="absolute inset-0 bg-ogene-500 blur-xl opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                            </div>
+                            <span className="text-2xl md:text-3xl font-serif font-black text-ogene-900 tracking-tighter">OGENE</span>
                         </Link>
                     </div>
 
                     {/* Desktop Nav - Centered */}
-                    <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 space-x-8">
-                        <Link to="/" className={`text-sm font-medium transition-colors ${isActive('/') ? 'text-ogene-900 border-b-2 border-ogene-900' : 'text-ogene-500 hover:text-ogene-700'}`}>
+                    <div className={`hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-1 p-1 rounded-full border backdrop-blur-sm transition-all duration-500 ${scrolled ? 'bg-ogene-100/50 border-ogene-200/50' : 'bg-white/10 border-white/10'}`}>
+                        <Link to="/" className={`px-5 py-2 text-sm font-bold rounded-full transition-all ${isActive('/') ? 'bg-white text-ogene-900 shadow-sm' : (scrolled ? 'text-ogene-500 hover:text-ogene-900' : 'text-white/70 hover:text-white')}`}>
                             Home
                         </Link>
-                        <Link to="/about" className={`text-sm font-medium transition-colors ${isActive('/about') ? 'text-ogene-900 border-b-2 border-ogene-900' : 'text-ogene-500 hover:text-ogene-700'}`}>
+                        <Link to="/about" className={`px-5 py-2 text-sm font-bold rounded-full transition-all ${isActive('/about') ? 'bg-white text-ogene-900 shadow-sm' : (scrolled ? 'text-ogene-500 hover:text-ogene-900' : 'text-white/70 hover:text-white')}`}>
                             About Us
                         </Link>
-                        <a href="https://africanuniversitybn.edu.bj/" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-ogene-500 hover:text-ogene-700 transition-colors">
+                        <a
+                            href="https://africanuniversitybn.edu.bj/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`px-5 py-2 text-sm font-bold transition-all ${scrolled ? 'text-ogene-500 hover:text-ogene-900' : 'text-white/70 hover:text-white'}`}
+                        >
                             AUB
                         </a>
-                        <a href="#contact-us" onClick={(e) => {
-                            e.preventDefault();
-                            if (location.pathname !== '/') {
-                                navigate('/', { state: { scrollToContact: true } });
-                            } else {
-                                document.getElementById('contact-us')?.scrollIntoView({ behavior: 'smooth' });
-                            }
-                        }} className="text-sm font-medium text-ogene-500 hover:text-ogene-700 transition-colors">
-                            Contact Us
+                        <a
+                            href="#contact-us"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (location.pathname !== '/') {
+                                    navigate('/', { state: { scrollToContact: true } });
+                                } else {
+                                    document.getElementById('contact-us')?.scrollIntoView({ behavior: 'smooth' });
+                                }
+                            }}
+                            className={`px-5 py-2 text-sm font-bold transition-all ${scrolled ? 'text-ogene-500 hover:text-ogene-900' : 'text-white/70 hover:text-white'}`}
+                        >
+                            Contact
                         </a>
                     </div>
 
                     {/* Auth Buttons - Right */}
-                    <div className="hidden md:flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-3">
                         {user ? (
-                            <div className="flex items-center gap-4">
-                                <Link to="/library">
-                                    <Button variant="ghost" className="text-ogene-600">My Library</Button>
+                            <div className={`flex items-center gap-2 p-1 rounded-full border pr-4 transition-all duration-500 ${scrolled ? 'bg-white/50 border-ogene-100' : 'bg-white/10 border-white/10'}`}>
+                                <Link to="/profile" className="h-9 w-9 bg-ogene-900 rounded-full flex items-center justify-center text-white hover:scale-105 transition-transform shadow-md overflow-hidden">
+                                    {profile?.avatar_url ? (
+                                        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <User size={18} />
+                                    )}
                                 </Link>
-                                <div className="h-8 w-[1px] bg-ogene-200"></div>
-                                <div className="flex items-center gap-3">
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold text-ogene-900">{profile?.full_name}</p>
-                                        <button onClick={handleSignOut} className="text-xs text-red-500 hover:text-red-700 font-medium text-right w-full">Sign Out</button>
-                                    </div>
-                                    <Link to="/profile" className="h-10 w-10 bg-ogene-100 rounded-full flex items-center justify-center text-ogene-600 hover:bg-ogene-200 transition-colors">
-                                        <User size={20} />
-                                    </Link>
+                                <div className="flex flex-col">
+                                    <span className={`text-[10px] font-bold uppercase tracking-tighter leading-none mb-0.5 ${scrolled ? 'text-ogene-400' : 'text-white/60'}`}>Welcome</span>
+                                    <span className={`text-xs font-black truncate max-w-[80px] leading-tight ${scrolled ? 'text-ogene-900' : 'text-white'}`}>{profile?.full_name?.split(' ')[0]}</span>
                                 </div>
+                                <div className={`h-4 w-[1px] mx-1 ${scrolled ? 'bg-ogene-200' : 'bg-white/20'}`}></div>
+                                <button onClick={handleSignOut} className="text-[10px] font-black text-red-500 hover:text-red-700 uppercase tracking-wider">Exit</button>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
                                 <Link to="/login">
-                                    <Button variant="ghost" className="text-ogene-700 font-medium">Log In</Button>
+                                    <Button
+                                        variant="ghost"
+                                        className={`font-bold text-xs uppercase tracking-widest px-4 transition-all duration-500 ${scrolled ? 'text-ogene-700 hover:bg-ogene-50' : 'text-white hover:bg-white/10'}`}
+                                    >
+                                        Log In
+                                    </Button>
                                 </Link>
                                 <Link to="/signup">
-                                    <Button className="bg-ogene-900 text-white hover:bg-ogene-800 rounded-full px-6">Get Started</Button>
+                                    <Button className="bg-ogene-900 text-white hover:bg-black rounded-full px-6 h-10 text-xs font-bold uppercase tracking-widest shadow-lg shadow-ogene-900/20 active:scale-95 transition-all">Join Now</Button>
                                 </Link>
                             </div>
                         )}
@@ -126,10 +148,9 @@ export default function Navbar() {
                     <div className="flex items-center md:hidden ml-auto">
                         <button
                             onClick={() => setIsOpen(!isOpen)}
-                            className="inline-flex items-center justify-center p-2 rounded-md text-ogene-400 hover:text-ogene-500 hover:bg-ogene-100 focus:outline-none transition-colors"
+                            className={`inline-flex items-center justify-center p-2 rounded-xl transition-all ${isOpen ? 'bg-ogene-900 text-white' : (scrolled ? 'text-ogene-900 hover:bg-ogene-100' : 'text-white hover:bg-white/10')}`}
                         >
-                            <span className="sr-only">Open main menu</span>
-                            {isOpen ? <X size={28} /> : <Menu size={28} />}
+                            {isOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
                     </div>
                 </div>
@@ -139,61 +160,91 @@ export default function Navbar() {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.2 }}
-                        className="md:hidden fixed inset-0 top-20 z-40 bg-white flex flex-col overflow-hidden"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="md:hidden overflow-hidden bg-white/95 backdrop-blur-xl rounded-b-[2rem] border-t border-ogene-50 shadow-2xl"
                     >
-                        <div className="px-4 pt-4 pb-10 flex flex-col h-full">
-                            <nav className="space-y-2 flex-grow">
-                                <Link to="/" className={`block px-4 py-4 rounded-xl text-lg font-bold transition-all ${isActive('/') ? 'text-ogene-900 bg-ogene-50' : 'text-ogene-600 hover:text-ogene-900 hover:bg-ogene-50/50'}`} onClick={() => setIsOpen(false)}>
-                                    Home
-                                </Link>
-                                <Link to="/about" className={`block px-4 py-4 rounded-xl text-lg font-bold transition-all ${isActive('/about') ? 'text-ogene-900 bg-ogene-50' : 'text-ogene-600 hover:text-ogene-900 hover:bg-ogene-50/50'}`} onClick={() => setIsOpen(false)}>
-                                    About Us
-                                </Link>
-                                <a href="https://africanuniversitybn.edu.bj/" target="_blank" rel="noopener noreferrer" className="block px-4 py-4 rounded-xl text-lg font-bold text-ogene-600 hover:text-ogene-900 hover:bg-ogene-50/50 transition-all" onClick={() => setIsOpen(false)}>
-                                    AUB
-                                </a>
-                                <a href="#contact-us" onClick={(e) => {
-                                    e.preventDefault();
-                                    setIsOpen(false);
-                                    if (location.pathname !== '/') {
-                                        navigate('/', { state: { scrollToContact: true } });
-                                    } else {
-                                        document.getElementById('contact-us')?.scrollIntoView({ behavior: 'smooth' });
-                                    }
-                                }} className="block px-4 py-4 rounded-xl text-lg font-bold text-ogene-600 hover:text-ogene-900 hover:bg-ogene-50/50 transition-all">
-                                    Contact Us
-                                </a>
-                            </nav>
+                        <div className="px-6 py-8 space-y-1">
+                            {/* Mobile Links */}
+                            {[
+                                { name: 'Home', path: '/', icon: '🏠' },
+                                { name: 'About Us', path: '/about', icon: '📖' },
+                                { name: 'African University', path: 'https://africanuniversitybn.edu.bj/', isExternal: true, icon: '🏛️' },
+                                { name: 'Contact Us', path: '#contact-us', isAnchor: true, icon: '✉️' }
+                            ].map((link, i) => (
+                                <motion.div
+                                    key={link.name}
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: i * 0.1 }}
+                                >
+                                    {link.isExternal ? (
+                                        <a
+                                            href={link.path}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-4 px-4 py-4 rounded-2xl text-lg font-black text-ogene-600 hover:bg-ogene-50 transition-all"
+                                            onClick={() => setIsOpen(false)}
+                                        >
+                                            <span className="text-2xl">{link.icon}</span>
+                                            {link.name}
+                                        </a>
+                                    ) : link.isAnchor ? (
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setIsOpen(false);
+                                                if (location.pathname !== '/') {
+                                                    navigate('/', { state: { scrollToContact: true } });
+                                                } else {
+                                                    document.getElementById('contact-us')?.scrollIntoView({ behavior: 'smooth' });
+                                                }
+                                            }}
+                                            className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-lg font-black text-ogene-600 hover:bg-ogene-50 transition-all text-left"
+                                        >
+                                            <span className="text-2xl">{link.icon}</span>
+                                            {link.name}
+                                        </button>
+                                    ) : (
+                                        <Link
+                                            to={link.path}
+                                            className={`flex items-center gap-4 px-4 py-4 rounded-2xl text-lg font-black transition-all ${isActive(link.path) ? 'text-ogene-900 bg-ogene-50' : 'text-ogene-600 hover:bg-ogene-50'}`}
+                                            onClick={() => setIsOpen(false)}
+                                        >
+                                            <span className="text-2xl">{link.icon}</span>
+                                            {link.name}
+                                        </Link>
+                                    )}
+                                </motion.div>
+                            ))}
 
-                            <div className="mt-auto px-2 pt-6 border-t border-ogene-50">
+                            <div className="pt-6 mt-4 border-t border-ogene-100">
                                 {user ? (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-3 pt-2 pb-4">
-                                            <div className="h-12 w-12 bg-ogene-100 rounded-full flex items-center justify-center text-ogene-600 font-bold">
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-4 p-4 rounded-2xl bg-ogene-50">
+                                            <div className="h-12 w-12 bg-ogene-900 rounded-full flex items-center justify-center text-white font-black shadow-md">
                                                 {profile?.full_name?.[0] || user.email[0].toUpperCase()}
                                             </div>
-                                            <div>
-                                                <p className="font-bold text-ogene-900">{profile?.full_name || 'User'}</p>
-                                                <p className="text-xs text-ogene-400 truncate max-w-[200px]">{user.email}</p>
+                                            <div className="flex-1">
+                                                <p className="font-black text-ogene-900 leading-none mb-1">{profile?.full_name || 'Member'}</p>
+                                                <p className="text-xs text-ogene-400 font-medium truncate max-w-[180px]">{user.email}</p>
                                             </div>
+                                            <button onClick={handleSignOut} className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors">
+                                                <X size={20} />
+                                            </button>
                                         </div>
-                                        <Link to="/library" className="block w-full py-4 text-center rounded-xl bg-ogene-50 text-ogene-700 font-bold" onClick={() => setIsOpen(false)}>
-                                            My Library
+                                        <Link to="/library" className="block w-full py-4 text-center rounded-2xl bg-ogene-100 text-ogene-900 font-black" onClick={() => setIsOpen(false)}>
+                                            Explore My Library
                                         </Link>
-                                        <button onClick={handleSignOut} className="block w-full py-4 text-center text-red-500 font-bold active:scale-[0.98] transition-transform">
-                                            Sign Out
-                                        </button>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 gap-3 pt-4">
-                                        <Link to="/signup" className="flex items-center justify-center px-4 py-4 bg-ogene-900 text-white rounded-xl font-bold text-lg shadow-lg active:scale-[0.98] transition-transform" onClick={() => setIsOpen(false)}>
-                                            Get Started
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <Link to="/signup" className="flex items-center justify-center py-4 bg-ogene-900 text-white rounded-2xl font-black shadow-lg shadow-ogene-900/20" onClick={() => setIsOpen(false)}>
+                                            Join Now
                                         </Link>
-                                        <Link to="/login" className="flex items-center justify-center px-4 py-4 border border-ogene-200 rounded-xl text-ogene-700 font-bold text-lg" onClick={() => setIsOpen(false)}>
+                                        <Link to="/login" className="flex items-center justify-center py-4 border-2 border-ogene-200 rounded-2xl text-ogene-700 font-black" onClick={() => setIsOpen(false)}>
                                             Sign In
                                         </Link>
                                     </div>
