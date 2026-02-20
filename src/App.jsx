@@ -33,15 +33,18 @@ function App() {
   return (
     <Routes>
       {/* PUBLIC ROUTES (Navbar Layout) */}
+      {/* PUBLIC ROUTES (Navbar Layout) */}
       <Route element={<PublicLayout />}>
         <Route index element={<Home />} />
         <Route path="about" element={<About />} />
         <Route path="articles" element={<Articles />} />
-        <Route path="login" element={<Login />} />
-        <Route path="signup" element={<Signup />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="update-password" element={<UpdatePassword />} />
       </Route>
+
+      {/* AUTH ROUTES (Standalone) */}
+      <Route path="login" element={<Login />} />
+      <Route path="signup" element={<Signup />} />
 
       {/* IMMERSIVE READER ROUTES (Minimalist Layout) */}
       <Route element={<ReaderLayout />}>

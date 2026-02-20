@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import useUserStore from '../../store/userStore';
 import { Menu, X, User } from 'lucide-react';
@@ -23,6 +23,18 @@ export default function Navbar() {
         }
     };
 
+    // Handle scroll to contact if navigated with state
+    useEffect(() => {
+        if (location.state?.scrollToContact) {
+            const contactSection = document.getElementById('contact-us');
+            if (contactSection) {
+                contactSection.scrollIntoView({ behavior: 'smooth' });
+                // Clear state
+                window.history.replaceState({}, document.title);
+            }
+        }
+    }, [location]);
+
     const navLinks = [
         { name: 'Home', path: '/' },
         { name: 'About Us', path: '/about' },
@@ -30,33 +42,58 @@ export default function Navbar() {
 
     const isActive = (path) => location.pathname === path;
 
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const isScrolled = window.scrollY > 10;
+            if (isScrolled !== scrolled) {
+                setScrolled(isScrolled);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [scrolled]);
+
     return (
-        <nav className="bg-white border-b border-ogene-100 sticky top-0 z-50">
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md border-b border-ogene-100 shadow-sm' : 'bg-transparent border-transparent'}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-20">
-                    <div className="flex items-center">
-                        <Link to="/" className="flex-shrink-0 flex items-center gap-3">
+                <div className="flex justify-between items-center h-20 relative">
+                    {/* Logo - Left */}
+                    <div className="flex-shrink-0 flex items-center">
+                        <Link to="/" className="flex items-center gap-3">
                             <img src="/logo.svg" alt="OGENE Logo" className="h-10 w-10" />
                             <span className="text-3xl font-serif font-bold text-ogene-900 tracking-tighter">OGENE</span>
                         </Link>
-
-                        {/* Desktop Nav */}
-                        <div className="hidden md:ml-10 md:flex md:space-x-8">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.path}
-                                    to={link.path}
-                                    className={`inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors ${isActive(link.path)
-                                        ? 'text-ogene-900 border-b-2 border-ogene-900'
-                                        : 'text-ogene-500 hover:text-ogene-700 hover:border-b-2 hover:border-ogene-300'
-                                        }`}
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
-                        </div>
                     </div>
 
+                    {/* Desktop Nav - Centered */}
+                    <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 space-x-8">
+                        <Link to="/" className={`text-sm font-medium transition-colors ${isActive('/') ? 'text-ogene-900 border-b-2 border-ogene-900' : 'text-ogene-500 hover:text-ogene-700'}`}>
+                            Home
+                        </Link>
+                        <Link to="/about" className={`text-sm font-medium transition-colors ${isActive('/about') ? 'text-ogene-900 border-b-2 border-ogene-900' : 'text-ogene-500 hover:text-ogene-700'}`}>
+                            About Us
+                        </Link>
+                        <a href="https://africanuniversitybn.edu.bj/" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-ogene-500 hover:text-ogene-700 transition-colors">
+                            AUB
+                        </a>
+                        <a href="#contact-us" onClick={(e) => {
+                            e.preventDefault();
+                            if (location.pathname !== '/') {
+                                navigate('/', { state: { scrollToContact: true } });
+                            } else {
+                                document.getElementById('contact-us')?.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        }} className="text-sm font-medium text-ogene-500 hover:text-ogene-700 transition-colors">
+                            Contact Us
+                        </a>
+                    </div>
+
+                    {/* Auth Buttons - Right */}
                     <div className="hidden md:flex items-center gap-4">
                         {user ? (
                             <div className="flex items-center gap-4">
@@ -110,19 +147,26 @@ export default function Navbar() {
                     >
                         <div className="px-4 pt-4 pb-10 flex flex-col h-full">
                             <nav className="space-y-2 flex-grow">
-                                {navLinks.map((link) => (
-                                    <Link
-                                        key={link.path}
-                                        to={link.path}
-                                        className={`block px-4 py-4 rounded-xl text-lg font-bold transition-all ${isActive(link.path)
-                                            ? 'text-ogene-900 bg-ogene-50'
-                                            : 'text-ogene-600 hover:text-ogene-900 hover:bg-ogene-50/50'
-                                            }`}
-                                        onClick={() => setIsOpen(false)}
-                                    >
-                                        {link.name}
-                                    </Link>
-                                ))}
+                                <Link to="/" className={`block px-4 py-4 rounded-xl text-lg font-bold transition-all ${isActive('/') ? 'text-ogene-900 bg-ogene-50' : 'text-ogene-600 hover:text-ogene-900 hover:bg-ogene-50/50'}`} onClick={() => setIsOpen(false)}>
+                                    Home
+                                </Link>
+                                <Link to="/about" className={`block px-4 py-4 rounded-xl text-lg font-bold transition-all ${isActive('/about') ? 'text-ogene-900 bg-ogene-50' : 'text-ogene-600 hover:text-ogene-900 hover:bg-ogene-50/50'}`} onClick={() => setIsOpen(false)}>
+                                    About Us
+                                </Link>
+                                <a href="https://africanuniversitybn.edu.bj/" target="_blank" rel="noopener noreferrer" className="block px-4 py-4 rounded-xl text-lg font-bold text-ogene-600 hover:text-ogene-900 hover:bg-ogene-50/50 transition-all" onClick={() => setIsOpen(false)}>
+                                    AUB
+                                </a>
+                                <a href="#contact-us" onClick={(e) => {
+                                    e.preventDefault();
+                                    setIsOpen(false);
+                                    if (location.pathname !== '/') {
+                                        navigate('/', { state: { scrollToContact: true } });
+                                    } else {
+                                        document.getElementById('contact-us')?.scrollIntoView({ behavior: 'smooth' });
+                                    }
+                                }} className="block px-4 py-4 rounded-xl text-lg font-bold text-ogene-600 hover:text-ogene-900 hover:bg-ogene-50/50 transition-all">
+                                    Contact Us
+                                </a>
                             </nav>
 
                             <div className="mt-auto px-2 pt-6 border-t border-ogene-50">
