@@ -46,22 +46,11 @@ export default function ReadArticle() {
             if (artError) throw artError;
             setArticle(art);
 
-            // 2. Verify Access (Auth Only for Reading)
-            // if (!user) return; // Handled by useEffect
-
-            // If premium, check subscription
-            if (art.is_premium) {
-                const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-                const isPremium = useUserStore.getState().isPremiumMember(profile);
-
-                if (!isPremium) {
-                    alert("Please subscribe to OGENE Premium to read this article.");
-                    navigate(`/article/${id}`);
-                    return;
-                }
-            }
-
-            // 3. Get Signed URL for the PDF
+            // 2. Get Signed URL for the PDF
+            //
+            // No entitlement check: the journal is open access. Access is
+            // enforced by storage RLS, not here — a client-side check was never
+            // the boundary anyway.
             if (art.file_path) {
                 const { data: signedData, error: signedError } = await supabase.storage
                     .from('articles')

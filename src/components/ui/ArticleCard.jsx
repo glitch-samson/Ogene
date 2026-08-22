@@ -140,12 +140,6 @@ export default function ArticleCard({ article }) {
                 <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
                 <span className="font-serif italic text-xl z-10 select-none tracking-[0.2em] transform group-hover:scale-110 transition-transform duration-1000">OGENE</span>
-
-                {article.is_premium && (
-                    <div className="absolute bottom-2.5 left-2.5 z-10 px-2 py-1.5 bg-ogene-900/60 backdrop-blur-xl border border-white/20 rounded-md text-[8px] font-bold text-white uppercase tracking-wider shadow-lg">
-                        Premium
-                    </div>
-                )}
             </div>
 
             {/* Compact Content Area */}
