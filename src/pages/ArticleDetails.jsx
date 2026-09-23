@@ -158,7 +158,9 @@ export default function ArticleDetails() {
                         <h3 className="text-lg md:text-xl font-bold text-ogene-900 mb-4 border-l-4 border-ogene-600 pl-4">About this Article</h3>
                         <p className="text-ogene-700 leading-relaxed text-sm md:text-base opacity-90">{article.description}</p>
                         <div className="mt-6 p-4 bg-ogene-50/50 rounded-xl border border-ogene-100/50 text-xs md:text-sm italic text-ogene-600">
-                            This article is open access. You are free to read, download and share it.
+                            {article.manuscript_id
+                                ? 'This article is open access. It is watermarked and available to read on-page only.'
+                                : 'This article is open access. You are free to read, download and share it.'}
                         </div>
                     </div>
 
@@ -172,7 +174,7 @@ export default function ArticleDetails() {
                                     Open Access
                                 </p>
                                 <p className="text-xs md:text-sm text-ogene-500">
-                                    Free to read and download.
+                                    {article.manuscript_id ? 'Free to read on-page. Watermarked, view-only.' : 'Free to read and download.'}
                                 </p>
                             </div>
                         </div>
@@ -209,14 +211,16 @@ export default function ArticleDetails() {
                                     Read
                                 </Button>
 
-                                <Button
-                                    size="lg"
-                                    onClick={handleDownload}
-                                    className="flex items-center justify-center gap-2 h-12 md:h-12 rounded-xl text-xs font-bold uppercase tracking-widest bg-ogene-900 text-white hover:bg-ogene-800"
-                                >
-                                    <Download size={18} />
-                                    PDF
-                                </Button>
+                                {!article.manuscript_id && (
+                                    <Button
+                                        size="lg"
+                                        onClick={handleDownload}
+                                        className="flex items-center justify-center gap-2 h-12 md:h-12 rounded-xl text-xs font-bold uppercase tracking-widest bg-ogene-900 text-white hover:bg-ogene-800"
+                                    >
+                                        <Download size={18} />
+                                        PDF
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>

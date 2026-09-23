@@ -10,7 +10,11 @@ import {
     LayoutDashboard,
     Heart,
     ChevronRight,
-    ChevronLeft
+    ChevronLeft,
+    UploadCloud,
+    FileText,
+    ClipboardList,
+    ClipboardCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../ui';
@@ -36,6 +40,10 @@ export default function Sidebar() {
         { icon: LayoutDashboard, label: 'Articles', path: '/browse', protected: true },
         { icon: BookOpen, label: 'My Library', path: '/library', protected: true }, // Reusing LayoutDashboard or finding a better icon like Search/Grid
         { icon: Heart, label: 'Favourites', path: '/favourites', protected: true },
+        { icon: UploadCloud, label: 'Submit Manuscript', path: '/submit', protected: true },
+        { icon: FileText, label: 'My Manuscripts', path: '/manuscripts', protected: true },
+        { icon: ClipboardList, label: 'Editorial Queue', path: '/editor', roles: ['editor', 'chief_editor', 'admin'] },
+        { icon: ClipboardCheck, label: 'Review Assignments', path: '/reviewer', roles: ['reviewer', 'admin'] },
         { icon: LayoutDashboard, label: 'Admin', path: '/admin', admin: true },
         { icon: User, label: 'Profile', path: '/profile', protected: true },
         { icon: Settings, label: 'Settings', path: '/settings', protected: true },
@@ -75,6 +83,7 @@ export default function Sidebar() {
                 {navItems.map((item) => {
                     if (item.protected && !user) return null;
                     if (item.admin && profile?.role !== 'admin') return null;
+                    if (item.roles && !item.roles.includes(profile?.role)) return null;
                     // Hide Home link for logged-in users (as requested)
                     if (item.path === '/' && user) return null;
 

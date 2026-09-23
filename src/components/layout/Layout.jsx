@@ -43,8 +43,12 @@ export default function Layout() {
                                 { label: 'My Library', path: '/library' },
                                 { label: 'Articles', path: '/browse' },
                                 { label: 'Favourites', path: '/favourites' },
+                                { label: 'Submit Manuscript', path: '/submit' },
+                                { label: 'My Manuscripts', path: '/manuscripts' },
                                 { label: 'Profile', path: '/profile' },
                                 { label: 'Settings', path: '/settings' },
+                                ...(['editor', 'chief_editor', 'admin'].includes(profile?.role) ? [{ label: 'Editorial Queue', path: '/editor' }] : []),
+                                ...(['reviewer', 'admin'].includes(profile?.role) ? [{ label: 'Review Assignments', path: '/reviewer' }] : []),
                                 ...(profile?.role === 'admin' ? [{ label: 'Admin Dashboard', path: '/admin' }] : [])
                             ].map((item) => (
                                 <Link
