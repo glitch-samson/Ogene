@@ -99,8 +99,8 @@ export default function Favourites() {
                                     <p className="text-xs font-medium text-ogene-400">By {article.profiles?.full_name}</p>
                                 </div>
                                 <div className="bg-ogene-50 px-6 py-4 border-t border-ogene-100 flex justify-between items-center mt-auto">
-                                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${article.is_premium ? 'bg-ogene-900 text-white' : 'bg-ogene-100 text-ogene-700'}`}>
-                                        {article.is_premium ? 'Premium' : 'Free'}
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-ogene-100 text-ogene-700">
+                                        {article.category || 'Article'}
                                     </span>
                                     <Link to={`/article/${article.id}`}>
                                         <span className="text-sm font-bold text-ogene-900 hover:underline">View Article</span>

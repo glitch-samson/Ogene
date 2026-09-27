@@ -15,6 +15,32 @@
   --color-primary: #111827;
   --color-primary-foreground: #ffffff;
 
+  /* African University of Benin's actual seal colors (navy + gold), pulled
+     from their live site's compiled CSS (--blue: #0d1f40, --yellow: #edc338).
+     Layered on top of ogene-* for journal-portal sections that should read
+     as affiliated with AUB specifically (homepage hero, stats, pipeline). */
+  --color-navy-50: #eef1f6;
+  --color-navy-100: #dde3ee;
+  --color-navy-200: #b8c4dc;
+  --color-navy-300: #8fa0c4;
+  --color-navy-400: #5d76a3;
+  --color-navy-500: #3a527f;
+  --color-navy-600: #243a63;
+  --color-navy-700: #182a4d;
+  --color-navy-800: #0f1f3d;
+  --color-navy-900: #0a1530;
+
+  --color-gold-50: #fdf8e7;
+  --color-gold-100: #faedc0;
+  --color-gold-200: #f5db85;
+  --color-gold-300: #f0c94f;
+  --color-gold-400: #edc338;
+  --color-gold-500: #d9ab1e;
+  --color-gold-600: #b38a15;
+  --color-gold-700: #8a6a10;
+  --color-gold-800: #614a0b;
+  --color-gold-900: #3d2f07;
+
   --font-serif: Merriweather, serif;
   --font-sans: Inter, sans-serif;
 }

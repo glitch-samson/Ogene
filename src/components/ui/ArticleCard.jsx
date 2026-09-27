@@ -135,15 +135,18 @@ export default function ArticleCard({ article }) {
             </div>
 
             {/* Compact Card Image Area */}
-            <div className="h-28 sm:h-36 bg-ogene-900 w-full group-hover:bg-ogene-950 transition-colors duration-700 flex items-center justify-center text-ogene-50/10 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-ogene-100/20 via-transparent to-transparent"></div>
-                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-
-                <span className="font-serif italic text-xl z-10 select-none tracking-[0.2em] transform group-hover:scale-110 transition-transform duration-1000">OGENE</span>
-
-                {article.is_premium && (
-                    <div className="absolute bottom-2.5 left-2.5 z-10 px-2 py-1.5 bg-ogene-900/60 backdrop-blur-xl border border-white/20 rounded-md text-[8px] font-bold text-white uppercase tracking-wider shadow-lg">
-                        Premium
+            <div className="h-28 sm:h-36 w-full relative overflow-hidden">
+                {article.cover_image ? (
+                    <img
+                        src={article.cover_image}
+                        alt={article.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                ) : (
+                    <div className="h-full w-full bg-ogene-900 group-hover:bg-ogene-950 transition-colors duration-700 flex items-center justify-center text-ogene-50/10 relative overflow-hidden">
+                        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-ogene-100/20 via-transparent to-transparent"></div>
+                        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                        <span className="font-serif italic text-xl z-10 select-none tracking-[0.2em] transform group-hover:scale-110 transition-transform duration-1000">OGENE</span>
                     </div>
                 )}
             </div>

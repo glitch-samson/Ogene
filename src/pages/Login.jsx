@@ -36,7 +36,9 @@ export default function Login() {
         try {
             await signIn(email, password);
             success('Welcome back to OGENE!', 'Login Successful');
-            navigate('/'); // Redirect to home on success
+            // No navigate() here — the useEffect above already redirects once
+            // `user` populates. Calling navigate('/') here too raced against
+            // it, so the page briefly flashed home before landing on /library.
         } catch (err) {
             showAlertError(err.message || 'Failed to sign in', 'Authentication Failed');
         } finally {

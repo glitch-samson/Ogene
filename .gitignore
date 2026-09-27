@@ -22,6 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Secrets — never commit these.
+# .env.example IS committed on purpose: it documents the required keys with no values.
 .env
-.env.example
+.env.*
+!.env.example
 

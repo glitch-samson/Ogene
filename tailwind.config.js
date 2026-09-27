@@ -20,6 +20,12 @@ export default {
           orange: "#ea580c", // approximate match for the design
           dark: "#1c1917"
         }
+        // NOTE: this project runs Tailwind v4, which reads its theme from the
+        // `@theme` block in src/index.css, not from this file — this config
+        // is not wired in via an `@config` directive anywhere. The ogene-*
+        // shades above don't even match the ones actually in effect
+        // (src/index.css defines its own, different ogene-* values). Add new
+        // colors to src/index.css's @theme block, not here.
       },
       fontFamily: {
         serif: ["Georgia", "serif"],

@@ -97,12 +97,14 @@ export default function Library() {
                                     <Link to={`/article/${article.id}`}>
                                         <span className="text-sm font-bold text-ogene-900 hover:underline">Read Now</span>
                                     </Link>
-                                    <Link to={`/article/${article.id}#download`}>
-                                        <Button size="sm" variant="ghost" className="text-ogene-600">
-                                            <Download size={16} className="mr-2" />
-                                            Get PDF
-                                        </Button>
-                                    </Link>
+                                    {!article.manuscript_id && (
+                                        <Link to={`/article/${article.id}#download`}>
+                                            <Button size="sm" variant="ghost" className="text-ogene-600">
+                                                <Download size={16} className="mr-2" />
+                                                Get PDF
+                                            </Button>
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         );

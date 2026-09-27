@@ -30,6 +30,15 @@ export default function ReadArticle() {
             return;
         }
         fetchArticleAndVerifyAccess();
+
+        // Blob URLs created for pipeline-published articles below are only
+        // valid for this page's lifetime — release the memory on unmount.
+        return () => {
+            setPdfUrl((prev) => {
+                if (prev && prev.startsWith('blob:')) URL.revokeObjectURL(prev);
+                return prev;
+            });
+        };
     }, [id, user]);
 
     const fetchArticleAndVerifyAccess = async () => {
@@ -46,29 +55,28 @@ export default function ReadArticle() {
             if (artError) throw artError;
             setArticle(art);
 
-            // 2. Verify Access (Auth Only for Reading)
-            // if (!user) return; // Handled by useEffect
-
-            // If premium, check subscription
-            if (art.is_premium) {
-                const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-                const isPremium = useUserStore.getState().isPremiumMember(profile);
-
-                if (!isPremium) {
-                    alert("Please subscribe to OGENE Premium to read this article.");
-                    navigate(`/article/${id}`);
-                    return;
-                }
-            }
-
-            // 3. Get Signed URL for the PDF
             if (art.file_path) {
-                const { data: signedData, error: signedError } = await supabase.storage
-                    .from('articles')
-                    .createSignedUrl(art.file_path, 3600); // 1 hour access
+                // manuscript_id is only set for pipeline-published articles (see
+                // ManuscriptEditorView's publish action). Those are watermarked
+                // and meant to be view-only, so they're fetched as an in-memory
+                // blob rather than a signed URL — a signed URL is a shareable
+                // link an author could copy out of the network tab and download
+                // directly; a blob URL is opaque, per-tab, and never leaves this
+                // page. Everything else keeps the existing signed-URL behavior.
+                if (art.manuscript_id) {
+                    const { data: blob, error: downloadError } = await supabase.storage
+                        .from('articles')
+                        .download(art.file_path);
+                    if (downloadError) throw downloadError;
+                    setPdfUrl(URL.createObjectURL(blob));
+                } else {
+                    const { data: signedData, error: signedError } = await supabase.storage
+                        .from('articles')
+                        .createSignedUrl(art.file_path, 3600); // 1 hour access
 
-                if (signedError) throw signedError;
-                setPdfUrl(signedData.signedUrl);
+                    if (signedError) throw signedError;
+                    setPdfUrl(signedData.signedUrl);
+                }
             }
 
         } catch (error) {
@@ -129,7 +137,10 @@ export default function ReadArticle() {
             </div>
 
             {/* Document Container */}
-            <div className="flex-1 overflow-auto flex justify-center p-8">
+            <div
+                className="flex-1 overflow-auto flex justify-center p-8"
+                onContextMenu={article.manuscript_id ? (e) => e.preventDefault() : undefined}
+            >
                 <div className="shadow-lg">
                     <Document
                         file={pdfUrl}
