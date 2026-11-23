@@ -1,11 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Button, Input, Label } from '../components/ui';
-import useUserStore from '../store/userStore';
 import { Upload, FileText, ShoppingCart, BarChart, Users } from 'lucide-react';
+import AuthorPicker from '../components/authors/AuthorPicker';
+import AuthorsManager from '../components/admin/AuthorsManager';
+import { withAuthors, getAuthors, formatAuthorsFull, formatAuthorsShort } from '../lib/authors';
+import { parseReferences, referencesToText } from '../lib/references';
+
+// Picker entries from an article's stored author list.
+const toPickerEntries = (article) =>
+    getAuthors(article)
+        .filter((a) => a.id)
+        .map((a) => ({
+            author_id: a.id,
+            full_name: a.full_name,
+            avatar_url: a.avatar_url,
+            has_account: !!a.profile_id,
+            is_corresponding: !!a.is_corresponding,
+            contributions: a.contributions || [],
+        }));
 
 export default function AdminDashboard() {
-    const { user } = useUserStore();
+    const [tab, setTab] = useState('articles');
+    const [authorTablesReady, setAuthorTablesReady] = useState(false);
+    const [pickerAuthors, setPickerAuthors] = useState([]);
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
@@ -21,6 +39,7 @@ export default function AdminDashboard() {
     // Form State
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [referencesText, setReferencesText] = useState('');
     const [file, setFile] = useState(null);
     const [authorName, setAuthorName] = useState(''); // Changed to text input
     // const [authorId, setAuthorId] = useState(''); // Deprecated
@@ -35,14 +54,16 @@ export default function AdminDashboard() {
         try {
             setLoading(true);
 
-            // 1. Fetch Articles
-            const { data: articlesData, error: articlesError } = await supabase
-                .from('articles')
-                .select('*')
-                .order('created_at', { ascending: false });
+            // 1. Fetch Articles (with their author lists, once that's installed)
+            const { data: articlesData, error: articlesError } = await withAuthors((sel) =>
+                supabase.from('articles').select(sel).order('created_at', { ascending: false }),
+            );
 
             if (articlesError) throw articlesError;
             setArticles(articlesData);
+
+            const probe = await supabase.from('authors').select('id', { count: 'exact', head: true });
+            setAuthorTablesReady(!probe.error);
 
             // 2. Fetch Subscriptions (Sales & Revenue)
             const { data: subscriptionsData, error: subsError } = await supabase
@@ -79,8 +100,11 @@ export default function AdminDashboard() {
 
     const handleUpload = async (e) => {
         e.preventDefault();
-        // Allow update if authorName is present (we might need to refine validation)
         if (!title) return;
+        if (authorTablesReady && pickerAuthors.length === 0) {
+            alert('Add at least one author.');
+            return;
+        }
 
         setUploading(true);
         try {
@@ -100,41 +124,59 @@ export default function AdminDashboard() {
             }
 
             // 2. Insert or Update Record
+            // author_name is kept as a plain-text copy of the list for older
+            // displays. author_id is no longer set to the uploading admin —
+            // that credited admins with other people's articles.
             const articleData = {
                 title,
                 description,
-                author_name: authorName,
+                author_name: authorTablesReady ? formatAuthorsFull(pickerAuthors) : authorName,
+                ...(authorTablesReady ? { reference_list: parseReferences(referencesText) } : {}),
                 // Only update file_path if a new file was uploaded
                 ...(filePath && { file_path: filePath }),
-                // Only set author_id if creating new, or if explicitly changing link? 
-                // For simplicity, we keep original author_id or set to admin on create
-                ...(editingId ? {} : { author_id: user.id }),
                 is_public: true
             };
 
-            let error;
+            let articleId = editingId;
             if (editingId) {
-                // Update
                 const { error: updateError } = await supabase
                     .from('articles')
                     .update(articleData)
                     .eq('id', editingId);
-                error = updateError;
+                if (updateError) throw updateError;
             } else {
-                // Insert
                 if (!file) throw new Error("File is required for new articles");
-                const { error: insertError } = await supabase
+                const { data: inserted, error: insertError } = await supabase
                     .from('articles')
-                    .insert([articleData]);
-                error = insertError;
+                    .insert([articleData])
+                    .select('id')
+                    .single();
+                if (insertError) throw insertError;
+                articleId = inserted.id;
             }
 
-            if (error) throw error;
+            // Replace the article's author list with the picker's.
+            if (authorTablesReady) {
+                const { error: clearError } = await supabase.from('article_authors').delete().eq('article_id', articleId);
+                if (clearError) throw clearError;
+                const { error: authorsError } = await supabase.from('article_authors').insert(
+                    pickerAuthors.map((a, i) => ({
+                        article_id: articleId,
+                        author_id: a.author_id,
+                        position: i,
+                        is_corresponding: !!a.is_corresponding,
+                        contributions: a.contributions || [],
+                    })),
+                );
+                if (authorsError) throw authorsError;
+            }
 
             // Reset form
             setTitle('');
             setDescription('');
-                setAuthorName('');
+            setReferencesText('');
+            setAuthorName('');
+            setPickerAuthors([]);
             setFile(null);
             setEditingId(null);
 
@@ -167,6 +209,8 @@ export default function AdminDashboard() {
         setTitle(article.title);
         setDescription(article.description || '');
         setAuthorName(article.author_name || '');
+        setPickerAuthors(toPickerEntries(article));
+        setReferencesText(referencesToText(article.reference_list));
         // We don't pre-fill file input as it's read-only
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -175,7 +219,9 @@ export default function AdminDashboard() {
         setEditingId(null);
         setTitle('');
         setDescription('');
+        setReferencesText('');
         setAuthorName('');
+        setPickerAuthors([]);
         setFile(null);
     };
 
@@ -203,6 +249,28 @@ export default function AdminDashboard() {
                 ))}
             </div>
 
+            <div role="tablist" className="mb-6 inline-flex rounded-lg bg-navy-50 p-1">
+                {[
+                    { key: 'articles', label: 'Articles' },
+                    { key: 'authors', label: 'Authors' },
+                ].map((t) => (
+                    <button
+                        key={t.key}
+                        role="tab"
+                        aria-selected={tab === t.key}
+                        onClick={() => setTab(t.key)}
+                        className={`rounded-md px-5 py-2 text-sm font-semibold transition-colors ${tab === t.key ? 'bg-white text-navy-800 shadow-sm' : 'text-ogene-500 hover:text-navy-800'}`}
+                    >
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+
+            {tab === 'authors' ? (
+                <div className="bg-white rounded-xl shadow-sm border border-ogene-100 overflow-hidden">
+                    <AuthorsManager />
+                </div>
+            ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Upload Form */}
                 <div className="lg:col-span-1">
@@ -218,17 +286,23 @@ export default function AdminDashboard() {
                                 <Input id="title" value={title} onChange={e => setTitle(e.target.value)} required placeholder="Article Title" />
                             </div>
 
-                            {/* Author Name Input */}
-                            <div>
-                                <Label htmlFor="author">Author Name</Label>
-                                <Input
-                                    id="author"
-                                    value={authorName}
-                                    onChange={e => setAuthorName(e.target.value)}
-                                    required
-                                    placeholder="e.g. Chinua Achebe"
-                                />
-                            </div>
+                            {authorTablesReady ? (
+                                <div>
+                                    <Label>Authors</Label>
+                                    <AuthorPicker value={pickerAuthors} onChange={setPickerAuthors} />
+                                </div>
+                            ) : (
+                                <div>
+                                    <Label htmlFor="author">Author Name</Label>
+                                    <Input
+                                        id="author"
+                                        value={authorName}
+                                        onChange={e => setAuthorName(e.target.value)}
+                                        required
+                                        placeholder="e.g. Chinua Achebe"
+                                    />
+                                </div>
+                            )}
 
                             <div>
                                 <Label htmlFor="desc">Description</Label>
@@ -240,6 +314,19 @@ export default function AdminDashboard() {
                                     placeholder="Short summary..."
                                 />
                             </div>
+
+                            {authorTablesReady && (
+                                <div>
+                                    <Label htmlFor="references">References</Label>
+                                    <textarea
+                                        className="flex w-full rounded-md border border-ogene-300 bg-transparent px-3 py-2 text-sm placeholder:text-ogene-400 focus:outline-none focus:ring-2 focus:ring-ogene-400 min-h-[100px]"
+                                        id="references"
+                                        value={referencesText}
+                                        onChange={e => setReferencesText(e.target.value)}
+                                        placeholder="One reference per line"
+                                    />
+                                </div>
+                            )}
 
 
                             <div>
@@ -284,10 +371,11 @@ export default function AdminDashboard() {
                                         <div>
                                             <h3 className="text-lg font-medium text-ogene-900">{article.title}</h3>
                                             <p className="text-sm text-ogene-500 mt-1">{article.description}</p>
-                                            <div className="flex items-center gap-4 mt-2 text-xs">
+                                            <div className="flex flex-wrap items-center gap-4 mt-2 text-xs">
                                                 <span className="px-2 py-0.5 rounded-full font-medium bg-ogene-100 text-ogene-700">
                                                     {article.category || 'Article'}
                                                 </span>
+                                                <span className="text-ogene-600">{formatAuthorsShort(getAuthors(article))}</span>
                                                 <span className="text-ogene-400">{new Date(article.created_at).toLocaleDateString()}</span>
                                             </div>
                                         </div>
@@ -302,6 +390,7 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             </div>
+            )}
         </div>
     );
 }

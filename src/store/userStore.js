@@ -71,6 +71,15 @@ const useUserStore = create((set) => ({
         await supabase.auth.signOut()
         set({ user: null, profile: null })
     },
+
+    // Re-read the signed-in user's profile after they edit it, so the navbar
+    // and other consumers don't show stale data.
+    refreshProfile: async () => {
+        const { user } = useUserStore.getState()
+        if (!user) return
+        const profile = await fetchProfile(user.id)
+        if (profile) set({ profile })
+    },
 }))
 
 // Registered once, at module scope. Previously this lived inside initialize(),

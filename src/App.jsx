@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import PublicLayout from './components/layout/PublicLayout';
 import ReaderLayout from './components/layout/ReaderLayout';
 import Home from './pages/Home';
 import About from './pages/About';
+import Blog from './pages/Blog';
 import Articles from './pages/Articles';
 import EditorialBoard from './pages/EditorialBoard';
 import AuthorGuidelines from './pages/AuthorGuidelines';
@@ -22,7 +23,6 @@ import ArticleDetails from './pages/ArticleDetails';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Favourites from './pages/Favourites';
-import ReadArticle from './pages/ReadArticle';
 import SubmitManuscript from './pages/SubmitManuscript';
 import MyManuscripts from './pages/MyManuscripts';
 import ManuscriptStatus from './pages/ManuscriptStatus';
@@ -33,6 +33,9 @@ import ReviewerDashboard from './pages/ReviewerDashboard';
 import ReviewForm from './pages/ReviewForm';
 import NotFound from './pages/NotFound';
 import { AnimatePresence } from 'framer-motion';
+
+// Pulls in react-pdf, so it's split out of the main bundle.
+const ReadArticle = lazy(() => import('./pages/ReadArticle'));
 
 // Every signed-in role. Generic account pages (library, profile, settings,
 // browsing, reading) should be open to all of them — only the role-specific
@@ -55,7 +58,9 @@ function App() {
         <Route element={<PublicLayout />}>
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
+          <Route path="blog" element={<Blog />} />
           <Route path="articles" element={<Articles />} />
+          <Route path="article/:id" element={<ArticleDetails />} />
           <Route path="editorial-board" element={<EditorialBoard />} />
           <Route path="guidelines" element={<AuthorGuidelines />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
@@ -66,12 +71,16 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
 
-        {/* IMMERSIVE READER ROUTES (Minimalist Layout) */}
+        {/* FULL-SCREEN READER (open access — no login) */}
         <Route element={<ReaderLayout />}>
-          <Route path="article/:id" element={<ArticleDetails />} />
-          <Route element={<ProtectedRoute allowedRoles={ANY_SIGNED_IN_ROLE} />}>
-            <Route path="read/:id" element={<ReadArticle />} />
-          </Route>
+          <Route
+            path="read/:id"
+            element={
+              <Suspense fallback={<div className="h-screen flex items-center justify-center text-ogene-500">Loading reader…</div>}>
+                <ReadArticle />
+              </Suspense>
+            }
+          />
         </Route>
 
         {/* AUTHENTICATED APP ROUTES (Sidebar Layout) */}

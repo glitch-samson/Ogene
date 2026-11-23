@@ -1,162 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import useUserStore from '../store/userStore';
-import { Document, Page, pdfjs } from 'react-pdf';
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, ArrowLeft } from 'lucide-react';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
+import { loadArticlePdf } from '../lib/articlePdf';
+import PdfViewer from '../components/reader/PdfViewer';
 
-// Configure PDF Worker
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.mjs',
-    import.meta.url,
-).toString();
-
+// Full-screen, open-access reader. View-only: see loadArticlePdf().
 export default function ReadArticle() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { user } = useUserStore();
     const [article, setArticle] = useState(null);
-    const [numPages, setNumPages] = useState(null);
-    const [pageNumber, setPageNumber] = useState(1);
-    const [scale, setScale] = useState(1.0);
-    const [loading, setLoading] = useState(true);
     const [pdfUrl, setPdfUrl] = useState(null);
+    const [status, setStatus] = useState('loading');
 
     useEffect(() => {
-        if (!user) {
-            navigate('/login');
-            return;
-        }
-        fetchArticleAndVerifyAccess();
+        let cancelled = false;
+        let objectUrl = null;
 
-        // Blob URLs created for pipeline-published articles below are only
-        // valid for this page's lifetime — release the memory on unmount.
-        return () => {
-            setPdfUrl((prev) => {
-                if (prev && prev.startsWith('blob:')) URL.revokeObjectURL(prev);
-                return prev;
-            });
-        };
-    }, [id, user]);
-
-    const fetchArticleAndVerifyAccess = async () => {
-        try {
-            setLoading(true);
-
-            // 1. Fetch Article Metadata
-            const { data: art, error: artError } = await supabase
-                .from('articles')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (artError) throw artError;
-            setArticle(art);
-
-            if (art.file_path) {
-                // manuscript_id is only set for pipeline-published articles (see
-                // ManuscriptEditorView's publish action). Those are watermarked
-                // and meant to be view-only, so they're fetched as an in-memory
-                // blob rather than a signed URL — a signed URL is a shareable
-                // link an author could copy out of the network tab and download
-                // directly; a blob URL is opaque, per-tab, and never leaves this
-                // page. Everything else keeps the existing signed-URL behavior.
-                if (art.manuscript_id) {
-                    const { data: blob, error: downloadError } = await supabase.storage
-                        .from('articles')
-                        .download(art.file_path);
-                    if (downloadError) throw downloadError;
-                    setPdfUrl(URL.createObjectURL(blob));
-                } else {
-                    const { data: signedData, error: signedError } = await supabase.storage
-                        .from('articles')
-                        .createSignedUrl(art.file_path, 3600); // 1 hour access
-
-                    if (signedError) throw signedError;
-                    setPdfUrl(signedData.signedUrl);
+        (async () => {
+            try {
+                const { data: art, error } = await supabase
+                    .from('articles')
+                    .select('id, title, file_path')
+                    .eq('id', id)
+                    .single();
+                if (error) throw error;
+                if (cancelled) return;
+                setArticle(art);
+                if (!art.file_path) {
+                    setStatus('missing');
+                    return;
                 }
+                objectUrl = await loadArticlePdf(art.file_path);
+                if (cancelled) {
+                    URL.revokeObjectURL(objectUrl);
+                    return;
+                }
+                setPdfUrl(objectUrl);
+                setStatus('ready');
+            } catch (err) {
+                console.error('Error loading article:', err);
+                if (!cancelled) setStatus('error');
             }
+        })();
 
-        } catch (error) {
-            console.error("Error loading article:", error);
-            alert("Failed to load article.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const onDocumentLoadSuccess = ({ numPages }) => {
-        setNumPages(numPages);
-    };
-
-    if (loading) return <div className="h-screen flex items-center justify-center text-ogene-500">Loading Reader...</div>;
-    if (!article || !pdfUrl) return <div className="h-screen flex items-center justify-center text-ogene-500">Document not found or invalid format.</div>;
+        return () => {
+            cancelled = true;
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+        };
+    }, [id]);
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col">
-            {/* Reader Toolbar */}
-            <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full text-gray-600">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <h1 className="font-serif font-bold text-gray-900 truncate max-w-xs md:max-w-md">{article.title}</h1>
-                </div>
-
-                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-                    <button
-                        onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
-                        disabled={pageNumber <= 1}
-                        className="p-1 hover:bg-white rounded disabled:opacity-50"
-                    >
-                        <ChevronLeft size={18} />
-                    </button>
-                    <span className="text-sm font-medium w-16 text-center">
-                        {pageNumber} / {numPages || '--'}
-                    </span>
-                    <button
-                        onClick={() => setPageNumber(prev => Math.min(prev + 1, numPages))}
-                        disabled={pageNumber >= numPages}
-                        className="p-1 hover:bg-white rounded disabled:opacity-50"
-                    >
-                        <ChevronRight size={18} />
-                    </button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <button onClick={() => setScale(s => Math.max(s - 0.1, 0.5))} className="p-2 hover:bg-gray-100 rounded text-gray-600">
-                        <ZoomOut size={20} />
-                    </button>
-                    <span className="text-sm font-medium w-12 text-center hidden md:block">{Math.round(scale * 100)}%</span>
-                    <button onClick={() => setScale(s => Math.min(s + 0.1, 2.0))} className="p-2 hover:bg-gray-100 rounded text-gray-600">
-                        <ZoomIn size={20} />
-                    </button>
-                </div>
+        <div className="flex min-h-screen flex-col bg-ogene-100">
+            <div className="sticky top-0 z-50 flex items-center gap-3 border-b border-ogene-200 bg-white px-4 py-3 shadow-sm">
+                <button onClick={() => navigate(-1)} className="rounded-full p-2 text-ogene-600 hover:bg-ogene-100" aria-label="Back">
+                    <ArrowLeft size={20} />
+                </button>
+                <h1 className="truncate font-serif font-bold text-ogene-900">{article?.title || 'Loading…'}</h1>
+                {article && (
+                    <Link to={`/article/${article.id}`} className="ml-auto shrink-0 text-sm font-medium text-navy-700 hover:underline">
+                        Article details
+                    </Link>
+                )}
             </div>
 
-            {/* Document Container */}
-            <div
-                className="flex-1 overflow-auto flex justify-center p-8"
-                onContextMenu={article.manuscript_id ? (e) => e.preventDefault() : undefined}
-            >
-                <div className="shadow-lg">
-                    <Document
-                        file={pdfUrl}
-                        onLoadSuccess={onDocumentLoadSuccess}
-                        loading={<div className="p-10 text-center bg-white">Loading PDF...</div>}
-                        error={<div className="p-10 text-center bg-white text-red-500">Failed to load PDF file.</div>}
-                    >
-                        <Page
-                            pageNumber={pageNumber}
-                            scale={scale}
-                            renderTextLayer={true}
-                            renderAnnotationLayer={true}
-                            className="bg-white"
-                        />
-                    </Document>
-                </div>
+            <div className="flex-1 p-3 md:p-6">
+                {status === 'loading' && <p className="p-10 text-center text-ogene-500">Loading reader…</p>}
+                {status === 'missing' && <p className="p-10 text-center text-ogene-500">This article has no PDF attached.</p>}
+                {status === 'error' && <p className="p-10 text-center text-ogene-500">This article couldn't be loaded.</p>}
+                {status === 'ready' && (
+                    <PdfViewer
+                        fileUrl={pdfUrl}
+                        articleId={article.id}
+                        showFullScreenLink={false}
+                        heightClass="h-[calc(100vh-8rem)]"
+                        className="mx-auto max-w-5xl"
+                    />
+                )}
             </div>
         </div>
     );

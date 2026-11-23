@@ -98,3 +98,8 @@
 .animate-scroll-y-reverse:hover {
     animation-play-state: paused;
 }
+/* Featured carousel: the active dot's gold bar fills over the slide interval */
+@keyframes featured-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

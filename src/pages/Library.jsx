@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import useUserStore from '../store/userStore';
-import { FileText, Download, Calendar, Trash2 } from 'lucide-react';
+import { FileText, Calendar, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui';
+import { withAuthors, getAuthors, formatAuthorsShort } from '../lib/authors';
 import { useAlert } from '../context/AlertContext';
 
 export default function Library() {
@@ -18,11 +19,13 @@ export default function Library() {
 
     const fetchLibrary = async () => {
         try {
-            const { data, error } = await supabase
-                .from('library')
-                .select('*, articles(*, profiles(full_name))')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
+            const { data, error } = await withAuthors((sel) =>
+                supabase
+                    .from('library')
+                    .select(`*, articles(${sel})`)
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false }),
+            );
 
             if (error) throw error;
             setLibraryItems(data || []);
@@ -91,20 +94,18 @@ export default function Library() {
                                         </Link>
                                     </h3>
                                     <p className="text-sm text-ogene-500 line-clamp-3 mb-4">{article.description}</p>
-                                    <p className="text-xs font-medium text-ogene-400">By {article.profiles?.full_name || 'Unknown'}</p>
+                                    <p className="text-xs font-medium text-ogene-400">By {formatAuthorsShort(getAuthors(article))}</p>
                                 </div>
                                 <div className="bg-ogene-50 px-6 py-4 border-t border-ogene-100 flex justify-between items-center mt-auto">
                                     <Link to={`/article/${article.id}`}>
                                         <span className="text-sm font-bold text-ogene-900 hover:underline">Read Now</span>
                                     </Link>
-                                    {!article.manuscript_id && (
-                                        <Link to={`/article/${article.id}#download`}>
-                                            <Button size="sm" variant="ghost" className="text-ogene-600">
-                                                <Download size={16} className="mr-2" />
-                                                Get PDF
-                                            </Button>
-                                        </Link>
-                                    )}
+                                    <Link to={`/read/${article.id}`}>
+                                        <Button size="sm" variant="ghost" className="text-ogene-600">
+                                            <FileText size={16} className="mr-2" />
+                                            View PDF
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
                         );

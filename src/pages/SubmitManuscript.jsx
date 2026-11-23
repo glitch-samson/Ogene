@@ -1,29 +1,49 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import useUserStore from '../store/userStore';
 import { useAlert } from '../context/AlertContext';
 import { Button, Input, Label } from '../components/ui';
 import { Upload } from 'lucide-react';
-
-const CATEGORIES = [
-    'Engineering & Applied Sciences',
-    'Medicine & Health Sciences',
-    'Social Sciences',
-    'Humanities',
-    'Natural Sciences',
-    'Other',
-];
+import { CATEGORIES } from '../lib/categories';
+import AuthorPicker from '../components/authors/AuthorPicker';
+import { parseReferences } from '../lib/references';
 
 export default function SubmitManuscript() {
     const { user } = useUserStore();
     const { success, error: showError } = useAlert();
     const navigate = useNavigate();
 
+    // Author list: the submitter first, then any co-authors they add. If the
+    // author tables aren't installed yet the section is simply hidden.
+    const [authors, setAuthors] = useState([]);
+    const [authorsReady, setAuthorsReady] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            const { data: selfId, error } = await supabase.rpc('ensure_author_for_profile', { p_profile_id: user.id });
+            if (cancelled || error || !selfId) return;
+            const { data: self } = await supabase.from('authors').select('id, full_name, avatar_url').eq('id', selfId).single();
+            if (cancelled) return;
+            setAuthors([{
+                author_id: selfId,
+                full_name: self?.full_name || 'You',
+                avatar_url: self?.avatar_url || null,
+                has_account: true,
+                is_corresponding: true,
+                contributions: [],
+            }]);
+            setAuthorsReady(true);
+        })();
+        return () => { cancelled = true; };
+    }, [user.id]);
+
     const [title, setTitle] = useState('');
     const [abstract, setAbstract] = useState('');
     const [category, setCategory] = useState(CATEGORIES[0]);
     const [keywords, setKeywords] = useState('');
+    const [referencesText, setReferencesText] = useState('');
     const [coverLetter, setCoverLetter] = useState('');
     const [file, setFile] = useState(null);
     const [coverImage, setCoverImage] = useState(null);
@@ -63,6 +83,8 @@ export default function SubmitManuscript() {
                     keywords,
                     cover_letter: coverLetter,
                     cover_image: coverImageUrl,
+                    // Only sent once the author tables (same migration) exist.
+                    ...(authorsReady ? { reference_list: parseReferences(referencesText) } : {}),
                 }])
                 .select()
                 .single();
@@ -88,6 +110,26 @@ export default function SubmitManuscript() {
                     uploaded_by: user.id,
                 }]);
             if (fileRowError) throw fileRowError;
+
+            if (authorsReady && authors.length) {
+                const { error: authorsError } = await supabase.from('manuscript_authors').insert(
+                    authors.map((a, i) => ({
+                        manuscript_id: manuscriptId,
+                        author_id: a.author_id,
+                        position: i,
+                        is_corresponding: !!a.is_corresponding,
+                        contributions: a.contributions || [],
+                    })),
+                );
+                if (authorsError) {
+                    // The manuscript itself is safely submitted; don't send the
+                    // author down the "file failed to attach" path for this.
+                    console.error('Saving co-authors failed:', authorsError);
+                    showError(`Your manuscript was submitted, but the author list couldn't be saved (${authorsError.message}). Please let the editor know.`);
+                    navigate(`/manuscripts/${manuscriptId}`);
+                    return;
+                }
+            }
 
             success('Manuscript submitted. You can track its progress from My Manuscripts.');
             navigate(`/manuscripts/${manuscriptId}`);
@@ -135,6 +177,17 @@ export default function SubmitManuscript() {
                     </select>
                 </div>
 
+                {authorsReady && (
+                    <div>
+                        <Label>Authors</Label>
+                        <p className="mb-3 text-xs text-ogene-500">
+                            You're listed first. Add anyone who worked on this with you, mark the corresponding author,
+                            and tick each person's contribution. Reviewers never see author names.
+                        </p>
+                        <AuthorPicker value={authors} onChange={setAuthors} lockedAuthorIds={authors[0] ? [authors[0].author_id] : []} />
+                    </div>
+                )}
+
                 <div>
                     <Label htmlFor="keywords">Keywords</Label>
                     <Input id="keywords" value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="Comma-separated keywords" />
@@ -151,6 +204,20 @@ export default function SubmitManuscript() {
                         placeholder="Summarize your manuscript..."
                     />
                 </div>
+
+                {authorsReady && (
+                    <div>
+                        <Label htmlFor="references">References (optional)</Label>
+                        <textarea
+                            id="references"
+                            value={referencesText}
+                            onChange={e => setReferencesText(e.target.value)}
+                            className="flex w-full rounded-md border border-ogene-300 bg-transparent px-3 py-2 text-sm placeholder:text-ogene-400 focus:outline-none focus:ring-2 focus:ring-ogene-400 min-h-[120px]"
+                            placeholder={'One reference per line, e.g.\nAchebe C. 1958. Things Fall Apart. London: Heinemann.'}
+                        />
+                        <p className="text-xs text-ogene-400 mt-1">Shown in the References tab when your article is published. Numbering is added automatically.</p>
+                    </div>
+                )}
 
                 <div>
                     <Label htmlFor="cover_letter">Cover Letter (optional)</Label>
