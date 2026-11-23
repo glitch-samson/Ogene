@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Bookmark } from 'lucide-react';
+import { LibraryBig, Heart } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import useUserStore from '../../store/userStore';
 import { useAlert } from '../../context/AlertContext';
-import { cn, OgeneIcon } from './index';
+import { cn } from './index';
+import { getAuthors, formatAuthorsShort, initials } from '../../lib/authors';
 
 export default function ArticleCard({ article }) {
     const { user } = useUserStore();
@@ -14,6 +15,7 @@ export default function ArticleCard({ article }) {
     const [isFavourite, setIsFavourite] = useState(false);
     const [isInLibrary, setIsInLibrary] = useState(false);
     const [loading, setLoading] = useState(false);
+    const authors = getAuthors(article);
 
     useEffect(() => {
         if (user) {
@@ -117,7 +119,7 @@ export default function ArticleCard({ article }) {
                     )}
                     title={isInLibrary ? "Remove from Library" : "Add to Library"}
                 >
-                    <Bookmark size={14} fill={isInLibrary ? "currentColor" : "none"} />
+                    <LibraryBig size={14} />
                 </button>
                 <button
                     onClick={toggleFavourite}
@@ -125,12 +127,12 @@ export default function ArticleCard({ article }) {
                     className={cn(
                         "p-1.5 rounded-full backdrop-blur-md shadow-md transition-all border",
                         isFavourite
-                            ? "bg-[#78350f] border-[#78350f] text-white"
-                            : "bg-white/90 border-white text-ogene-400 hover:text-[#78350f] active:scale-95"
+                            ? "bg-rose-500 border-rose-500 text-white"
+                            : "bg-white/90 border-white text-ogene-400 hover:text-rose-500 active:scale-95"
                     )}
                     title={isFavourite ? "Remove from Favourites" : "Add to Favourites"}
                 >
-                    <OgeneIcon size={14} fill={isFavourite ? "currentColor" : "none"} />
+                    <Heart size={14} fill={isFavourite ? "currentColor" : "none"} />
                 </button>
             </div>
 
@@ -171,12 +173,16 @@ export default function ArticleCard({ article }) {
                 </p>
 
                 <div className="pt-3 border-t border-ogene-50/80 flex items-center justify-between mt-auto">
-                    <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-ogene-50 flex items-center justify-center text-[8px] font-bold text-ogene-700 border border-ogene-100">
-                            {(article.author_name?.[0] || article.profiles?.full_name?.[0] || 'U')}
-                        </div>
-                        <span className="text-[10px] font-bold text-ogene-800 truncate max-w-[80px]">
-                            {article.author_name || article.profiles?.full_name || 'Anonymous'}
+                    <div className="flex items-center gap-2 min-w-0">
+                        {authors[0]?.avatar_url ? (
+                            <img src={authors[0].avatar_url} alt="" className="h-6 w-6 shrink-0 rounded-full object-cover border border-ogene-100" />
+                        ) : (
+                            <div className="h-6 w-6 shrink-0 rounded-full bg-ogene-50 flex items-center justify-center text-[8px] font-bold text-ogene-700 border border-ogene-100">
+                                {initials(authors[0]?.full_name || 'U')}
+                            </div>
+                        )}
+                        <span className="text-[10px] font-bold text-ogene-800 truncate max-w-[120px]" title={formatAuthorsShort(authors, 'Anonymous')}>
+                            {formatAuthorsShort(authors, 'Anonymous')}
                         </span>
                     </div>
                     <div className="flex items-center gap-1 text-ogene-900 group/btn">

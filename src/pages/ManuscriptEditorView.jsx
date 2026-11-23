@@ -7,6 +7,7 @@ import { Button } from '../components/ui';
 import { ArrowLeft, Clock, UserPlus, Send, ArrowRightLeft, Stamp, Download, FileText } from 'lucide-react';
 import { StatusBadge } from './MyManuscripts';
 import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
+import { formatAuthorsFull, parseKeywords } from '../lib/authors';
 
 const EVENT_LABELS = {
     submitted: 'Manuscript submitted',
@@ -324,6 +325,33 @@ export default function ManuscriptEditorView() {
                 const watermarkedBytes = await pdfDoc.save();
                 const watermarkedBlob = new Blob([watermarkedBytes], { type: 'application/pdf' });
 
+                // The article's author list: the co-authors recorded at
+                // submission, or the submitting author alone. If the author
+                // tables aren't installed yet, publish the old way.
+                const { data: msAuthors, error: msAuthorsError } = await supabase
+                    .from('manuscript_authors')
+                    .select('author_id, position, is_corresponding, contributions, authors(full_name)')
+                    .eq('manuscript_id', manuscript.id)
+                    .order('position');
+                const authorTablesReady = !msAuthorsError;
+                let authorRows = msAuthors || [];
+                if (authorTablesReady && authorRows.length === 0) {
+                    const { data: selfId, error: selfError } = await supabase.rpc('ensure_author_for_profile', {
+                        p_profile_id: manuscript.submitting_author_id,
+                    });
+                    if (selfError) throw selfError;
+                    authorRows = [{
+                        author_id: selfId,
+                        position: 0,
+                        is_corresponding: true,
+                        contributions: [],
+                        authors: { full_name: manuscript.author?.full_name || 'Unknown' },
+                    }];
+                }
+                const authorName = authorRows.length
+                    ? formatAuthorsFull(authorRows.map((r) => ({ full_name: r.authors?.full_name || 'Unknown' })))
+                    : manuscript.author?.full_name || 'Unknown';
+
                 const newPath = `${Math.random()}.pdf`;
                 const { error: uploadError } = await supabase.storage
                     .from('articles')
@@ -336,16 +364,32 @@ export default function ManuscriptEditorView() {
                         title: manuscript.title,
                         description: manuscript.abstract,
                         author_id: manuscript.submitting_author_id,
-                        author_name: manuscript.author?.full_name || 'Unknown',
+                        author_name: authorName,
                         category: manuscript.category,
                         file_path: newPath,
                         cover_image: manuscript.cover_image || null,
                         is_public: true,
                         manuscript_id: manuscript.id,
+                        ...(authorTablesReady
+                            ? { keywords: parseKeywords(manuscript.keywords), reference_list: manuscript.reference_list || null }
+                            : {}),
                     }])
                     .select()
                     .single();
                 if (articleError) throw articleError;
+
+                if (authorTablesReady && authorRows.length) {
+                    const { error: authorsError } = await supabase.from('article_authors').insert(
+                        authorRows.map((r, i) => ({
+                            article_id: article.id,
+                            author_id: r.author_id,
+                            position: i,
+                            is_corresponding: r.is_corresponding,
+                            contributions: r.contributions || [],
+                        })),
+                    );
+                    if (authorsError) throw authorsError;
+                }
 
                 const { error: updateError } = await supabase
                     .from('manuscripts')

@@ -6,6 +6,7 @@ import { FileText, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAlert } from '../context/AlertContext';
 import { OgeneIcon } from '../components/ui';
+import { withAuthors, getAuthors, formatAuthorsShort } from '../lib/authors';
 
 export default function Favourites() {
     const { user } = useUserStore();
@@ -19,16 +20,12 @@ export default function Favourites() {
 
     const fetchFavourites = async () => {
         try {
-            const { data, error } = await supabase
-                .from('favourites')
-                .select(`
-                    id,
-                    articles (
-                        *,
-                        profiles (full_name)
-                    )
-                `)
-                .eq('user_id', user.id);
+            const { data, error } = await withAuthors((sel) =>
+                supabase
+                    .from('favourites')
+                    .select(`id, articles(${sel})`)
+                    .eq('user_id', user.id),
+            );
 
             if (error) throw error;
             setFavourites(data || []);
@@ -96,7 +93,7 @@ export default function Favourites() {
                                         </Link>
                                     </h3>
                                     <p className="text-sm text-ogene-500 line-clamp-3 mb-4">{article.description}</p>
-                                    <p className="text-xs font-medium text-ogene-400">By {article.profiles?.full_name}</p>
+                                    <p className="text-xs font-medium text-ogene-400">By {formatAuthorsShort(getAuthors(article))}</p>
                                 </div>
                                 <div className="bg-ogene-50 px-6 py-4 border-t border-ogene-100 flex justify-between items-center mt-auto">
                                     <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-ogene-100 text-ogene-700">
