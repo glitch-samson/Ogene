@@ -24,7 +24,7 @@ export default function Signup() {
 
     useEffect(() => {
         if (!loading && user) {
-            navigate('/library');
+            navigate('/', { replace: true });
         }
     }, [user, loading, navigate]);
 

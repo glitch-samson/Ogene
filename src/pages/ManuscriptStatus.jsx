@@ -6,6 +6,7 @@ import { useAlert } from '../context/AlertContext';
 import { Button } from '../components/ui';
 import { ArrowLeft, Clock, MessageSquare, UploadCloud, ExternalLink } from 'lucide-react';
 import { StatusBadge } from './MyManuscripts';
+import { fetchAuthorTimeline } from '../lib/authorTimeline';
 
 const EVENT_LABELS = {
     submitted: 'Manuscript submitted',
@@ -47,7 +48,9 @@ export default function ManuscriptStatus() {
                 { data: fl, error: flErr },
             ] = await Promise.all([
                 supabase.from('manuscripts').select('*').eq('id', id).single(),
-                supabase.from('manuscript_events').select('*').eq('manuscript_id', id).order('created_at', { ascending: true }),
+                // Through the double-blind-safe function: never returns who did
+                // what (a reviewer's id) or review notes.
+                fetchAuthorTimeline(id),
                 supabase.from('manuscript_review_feedback').select('*').eq('manuscript_id', id).order('reviewer_number', { ascending: true }),
                 supabase.from('manuscript_files').select('*').eq('manuscript_id', id),
             ]);

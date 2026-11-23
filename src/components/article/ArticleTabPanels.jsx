@@ -59,14 +59,13 @@ const fmtDate = (value) =>
     new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
 /**
- * citedBy: OGENE articles whose reference list mentions this one
- * (article_cited_by()), or null while loading.
+ * Citation style switcher + formatted citation + copy button. Used both in the
+ * Citations tab and in the "Cite this article" pop-up.
  */
-export function CitationsPanel({ title, authors, published, url, citedBy }) {
+export function CitationTool({ title, authors, published, url }) {
     const [style, setStyle] = useState('apa');
     const [copied, setCopied] = useState(false);
     const text = buildCitations({ title, authors, published, url })[style];
-    const scholarSearch = `https://scholar.google.com/scholar?q=${encodeURIComponent(`"${title}"`)}`;
 
     const copy = async () => {
         try {
@@ -77,6 +76,46 @@ export function CitationsPanel({ title, authors, published, url, citedBy }) {
             setCopied(false);
         }
     };
+
+    return (
+        <>
+            <div role="tablist" aria-label="Citation style" className="inline-flex gap-1 rounded-lg bg-navy-50 p-1">
+                {STYLES.map((s) => (
+                    <button
+                        key={s.key}
+                        type="button"
+                        role="tab"
+                        aria-selected={style === s.key}
+                        onClick={() => { setStyle(s.key); setCopied(false); }}
+                        className={`rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${style === s.key ? 'bg-white text-navy-800 shadow-sm' : 'text-ogene-500 hover:text-navy-800'}`}
+                    >
+                        {s.label}
+                    </button>
+                ))}
+            </div>
+
+            <pre className={`mt-4 max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-navy-100 bg-ogene-50 p-5 leading-relaxed text-ogene-800 ${style === 'bibtex' ? 'font-mono text-xs' : 'font-serif text-[15px]'}`}>
+                {text}
+            </pre>
+
+            <button
+                type="button"
+                onClick={copy}
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-900"
+            >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+                {copied ? 'Copied' : 'Copy citation'}
+            </button>
+        </>
+    );
+}
+
+/**
+ * citedBy: OGENE articles whose reference list mentions this one
+ * (article_cited_by()), or null while loading.
+ */
+export function CitationsPanel({ title, authors, published, url, citedBy }) {
+    const scholarSearch = `https://scholar.google.com/scholar?q=${encodeURIComponent(`"${title}"`)}`;
 
     return (
         <>
@@ -129,35 +168,8 @@ export function CitationsPanel({ title, authors, published, url, citedBy }) {
 
             {/* ── Cite this article ── */}
             <h3 className="font-semibold text-ogene-900">Cite this article</h3>
-            <p className="mt-1 text-sm text-ogene-500">Choose a citation style, then copy it into your reference list.</p>
-
-            <div role="tablist" aria-label="Citation style" className="mt-5 inline-flex gap-1 rounded-lg bg-navy-50 p-1">
-                {STYLES.map((s) => (
-                    <button
-                        key={s.key}
-                        type="button"
-                        role="tab"
-                        aria-selected={style === s.key}
-                        onClick={() => { setStyle(s.key); setCopied(false); }}
-                        className={`rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${style === s.key ? 'bg-white text-navy-800 shadow-sm' : 'text-ogene-500 hover:text-navy-800'}`}
-                    >
-                        {s.label}
-                    </button>
-                ))}
-            </div>
-
-            <pre className={`mt-4 whitespace-pre-wrap break-words rounded-lg border border-navy-100 bg-ogene-50 p-5 leading-relaxed text-ogene-800 ${style === 'bibtex' ? 'font-mono text-xs' : 'font-serif text-[15px]'}`}>
-                {text}
-            </pre>
-
-            <button
-                type="button"
-                onClick={copy}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-900"
-            >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? 'Copied' : 'Copy citation'}
-            </button>
+            <p className="mt-1 mb-5 text-sm text-ogene-500">Choose a citation style, then copy it into your reference list.</p>
+            <CitationTool title={title} authors={authors} published={published} url={url} />
         </>
     );
 }

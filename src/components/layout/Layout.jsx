@@ -40,6 +40,8 @@ export default function Layout() {
                     >
                         <nav className="space-y-2 flex-1 overflow-y-auto">
                             {[
+                                { label: 'Home', path: '/' },
+                                { label: 'Notifications', path: '/notifications' },
                                 { label: 'My Library', path: '/library' },
                                 { label: 'Articles', path: '/browse' },
                                 { label: 'Favourites', path: '/favourites' },

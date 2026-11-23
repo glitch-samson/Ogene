@@ -33,7 +33,7 @@ const applySession = async (session) => {
     }
 
     const profile = await fetchProfile(session.user.id)
-    useUserStore.setState({ user: session.user, profile, loading: false })
+    useUserStore.setState({ user: session.user, profile, loading: false, signingOut: false })
 }
 
 const useUserStore = create((set) => ({
@@ -67,7 +67,14 @@ const useUserStore = create((set) => ({
         // means it cannot be handed a client-supplied `role`.
     },
 
+    // True from the moment someone signs out until they next sign in. Protected
+    // pages use it to send them home instead of to the login page — otherwise
+    // the page they signed out from (e.g. the dashboard) is remembered and the
+    // next login lands straight back on it.
+    signingOut: false,
+
     signOut: async () => {
+        set({ signingOut: true })
         await supabase.auth.signOut()
         set({ user: null, profile: null })
     },
@@ -86,9 +93,15 @@ const useUserStore = create((set) => ({
 // which is called from App's effect and was re-invoked after payments — so every
 // call stacked another listener, and each one refetched the profile on any auth
 // event. INITIAL_SESSION is skipped because initialize() already loads it.
+//
+// applySession() is deferred with setTimeout: Supabase runs this callback while
+// it still holds its internal auth lock, and applySession() makes a Supabase
+// query (the profile), which waits for that same lock. Run inline, the profile
+// load stalls, `user` never updates after sign-in, and nothing reacts to the
+// login until the page is reloaded. Supabase's docs recommend exactly this.
 supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'INITIAL_SESSION') return
-    applySession(session)
+    setTimeout(() => applySession(session), 0)
 })
 
 export default useUserStore
