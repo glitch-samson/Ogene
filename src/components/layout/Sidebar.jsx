@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useUserStore from '../../store/userStore';
 import {
@@ -14,16 +14,26 @@ import {
     UploadCloud,
     FileText,
     ClipboardList,
-    ClipboardCheck
+    ClipboardCheck,
+    Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../ui';
+import useNotificationStore, { useUnreadCount } from '../../store/notificationStore';
 
 export default function Sidebar() {
     const { user, profile, signOut } = useUserStore();
     const location = useLocation();
     const navigate = useNavigate();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const loadNotifications = useNotificationStore((s) => s.load);
+    const unread = useUnreadCount();
+
+    // Dashboard pages don't render the public navbar, so load from here too
+    // (the store skips repeat loads).
+    useEffect(() => {
+        if (user && profile) loadNotifications(user, profile);
+    }, [user, profile, loadNotifications]);
 
     const handleSignOut = async () => {
         try {
@@ -31,7 +41,7 @@ export default function Sidebar() {
         } catch (error) {
             console.error("Sign out error", error);
         } finally {
-            navigate('/login');
+            navigate('/');
         }
     };
 
@@ -39,6 +49,7 @@ export default function Sidebar() {
         { icon: Home, label: 'Home', path: '/' },
         { icon: LayoutDashboard, label: 'Articles', path: '/browse', protected: true },
         { icon: BookOpen, label: 'My Library', path: '/library', protected: true }, // Reusing LayoutDashboard or finding a better icon like Search/Grid
+        { icon: Bell, label: 'Notifications', path: '/notifications', protected: true, showUnread: true },
         { icon: Heart, label: 'Favourites', path: '/favourites', protected: true },
         { icon: UploadCloud, label: 'Submit Manuscript', path: '/submit', protected: true },
         { icon: FileText, label: 'My Manuscripts', path: '/manuscripts', protected: true },
@@ -84,10 +95,9 @@ export default function Sidebar() {
                     if (item.protected && !user) return null;
                     if (item.admin && profile?.role !== 'admin') return null;
                     if (item.roles && !item.roles.includes(profile?.role)) return null;
-                    // Hide Home link for logged-in users (as requested)
-                    if (item.path === '/' && user) return null;
 
                     const isActive = location.pathname === item.path;
+                    const badge = item.showUnread && unread > 0 ? (unread > 99 ? '99+' : unread) : null;
 
                     return (
                         <Link
@@ -100,16 +110,24 @@ export default function Sidebar() {
                                     : "text-ogene-600 hover:bg-ogene-50 hover:text-ogene-900"
                             )}
                         >
-                            <item.icon size={22} className={cn(isActive ? "text-white" : "text-ogene-500 group-hover:text-ogene-900")} />
+                            <span className="relative">
+                                <item.icon size={22} className={cn(isActive ? "text-white" : "text-ogene-500 group-hover:text-ogene-900")} />
+                                {badge && isCollapsed && (
+                                    <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+                                )}
+                            </span>
 
                             {!isCollapsed && (
                                 <motion.span
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ duration: 0.2 }}
-                                    className="font-medium"
+                                    className="flex flex-1 items-center justify-between font-medium"
                                 >
                                     {item.label}
+                                    {badge && (
+                                        <span className="ml-2 rounded-full bg-red-500 px-1.5 text-[11px] font-bold leading-5 text-white">{badge}</span>
+                                    )}
                                 </motion.span>
                             )}
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Eye, EyeOff, ClipboardList, History, PenLine } from 'lucide-react';
 import useUserStore from '../store/userStore';
 import { useAlert } from '../context/AlertContext';
@@ -19,12 +19,16 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const { signIn, user, loading } = useUserStore();
     const navigate = useNavigate();
+    const location = useLocation();
 
+    // Signed in: go back to the page that asked for a login (e.g. Submit
+    // Manuscript), otherwise the homepage — not straight into the dashboard.
     useEffect(() => {
         if (!loading && user) {
-            navigate('/library');
+            const from = location.state?.from;
+            navigate(from?.pathname ? `${from.pathname}${from.search || ''}` : '/', { replace: true });
         }
-    }, [user, loading, navigate]);
+    }, [user, loading, navigate, location.state]);
 
     if (loading) {
         return (

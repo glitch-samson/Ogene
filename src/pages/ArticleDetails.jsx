@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { LibraryBig, Heart, ChevronRight, FileText, LockOpen, Quote, Maximize2, Send, BookOpen, BookMarked, Printer, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -7,6 +7,7 @@ import { useAlert } from '../context/AlertContext';
 import AuthorNames from '../components/authors/AuthorNames';
 import ShareMenu from '../components/article/ShareMenu';
 import { ReferencesPanel, CitationsPanel, PermissionsPanel } from '../components/article/ArticleTabPanels';
+import CiteModal from '../components/article/CiteModal';
 import { withAuthors, getAuthors, formatAuthorsShort } from '../lib/authors';
 import { loadArticlePdf } from '../lib/articlePdf';
 import BrowseBySubject from '../components/article/BrowseBySubject';
@@ -73,6 +74,10 @@ export default function ArticleDetails() {
     // Open info tab, plus the last one shown so its content stays put while
     // the panel animates closed.
     const [activeTab, setActiveTab] = useState(null);
+    const [citeOpen, setCiteOpen] = useState(false);
+    // Stable, so the pop-up doesn't re-run its focus/keyboard setup each time
+    // the page re-renders while it's open.
+    const closeCite = useCallback(() => setCiteOpen(false), []);
     const [shownTab, setShownTab] = useState('references');
     const [activeSection, setActiveSection] = useState('abstract');
     const pdfUrlRef = useRef(null);
@@ -209,14 +214,6 @@ export default function ArticleDetails() {
         setActiveTab((current) => (current === tabId ? null : tabId));
     };
 
-    const openTabAndReveal = (tabId) => {
-        setShownTab(tabId);
-        setActiveTab(tabId);
-        setTimeout(() => {
-            document.getElementById('article-info-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 60);
-    };
-
     const toggleFavourite = async () => {
         if (!user) return navigate('/login');
         try {
@@ -335,7 +332,7 @@ export default function ArticleDetails() {
                                         ].filter(Boolean).join(' · ')}
                                     </p>
                                     <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-                                        <button type="button" onClick={() => openTabAndReveal('citations')} className={textLink}>
+                                        <button type="button" onClick={() => setCiteOpen(true)} className={textLink}>
                                             <Quote size={14} /> Cite this article
                                         </button>
                                         <span className="text-ogene-500 lg:hidden">{views ?? '—'} views</span>
@@ -579,6 +576,15 @@ export default function ArticleDetails() {
             </div>
 
             <BrowseBySubject />
+
+            <CiteModal
+                open={citeOpen}
+                onClose={closeCite}
+                title={article.title}
+                authors={authors.map((a) => a.full_name)}
+                published={published}
+                url={pageUrl}
+            />
         </div>
     );
 }

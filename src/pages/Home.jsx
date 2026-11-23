@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import useUserStore from '../store/userStore';
 import { supabase } from '../lib/supabase';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Send, ClipboardCheck, Users2, PenTool, Stamp, BookOpenCheck, Mail, Phone, Calendar } from 'lucide-react';
 import { Button, ArticleCard } from '../components/ui';
@@ -47,17 +46,9 @@ const PIPELINE_STAGES = [
 ];
 
 export default function Home() {
-    const { user, profile } = useUserStore();
-    const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [impactFactor, setImpactFactor] = useState(null);
     const [articles, setArticles] = useState([]);
-
-    useEffect(() => {
-        if (user && profile) {
-            navigate('/library');
-        }
-    }, [user, profile, navigate]);
 
     useEffect(() => {
         fetchHomeData();

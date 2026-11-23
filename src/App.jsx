@@ -23,6 +23,7 @@ import ArticleDetails from './pages/ArticleDetails';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Favourites from './pages/Favourites';
+import Notifications from './pages/Notifications';
 import SubmitManuscript from './pages/SubmitManuscript';
 import MyManuscripts from './pages/MyManuscripts';
 import ManuscriptStatus from './pages/ManuscriptStatus';
@@ -90,6 +91,7 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
             <Route path="favourites" element={<Favourites />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="browse" element={<Articles />} />
           </Route>
 

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import useUserStore from '../../store/userStore';
-import { Menu, X, User, ChevronDown, Library, FileText, UserCircle, LogOut } from 'lucide-react';
+import { Menu, X, User, ChevronDown, LayoutDashboard, Bell, UserCircle, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAlert } from '../../context/AlertContext';
+import useNotificationStore, { useUnreadCount } from '../../store/notificationStore';
 
 const NAV_LINKS = [
     { name: 'Home', path: '/', end: true },
@@ -14,10 +15,19 @@ const NAV_LINKS = [
 ];
 
 const ACCOUNT_LINKS = [
-    { name: 'My Library', path: '/library', icon: Library },
-    { name: 'My Manuscripts', path: '/manuscripts', icon: FileText },
+    { name: 'Dashboard', path: '/library', icon: LayoutDashboard },
+    { name: 'Notifications', path: '/notifications', icon: Bell, showUnread: true },
     { name: 'Profile', path: '/profile', icon: UserCircle },
 ];
+
+function UnreadBadge({ count, className = '' }) {
+    if (!count) return null;
+    return (
+        <span className={`inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold leading-5 text-white ${className}`}>
+            {count > 99 ? '99+' : count}
+        </span>
+    );
+}
 
 function Wordmark({ onClick }) {
     return (
@@ -51,8 +61,17 @@ export default function Navbar() {
     const [accountOpen, setAccountOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const accountRef = useRef(null);
+    const loadNotifications = useNotificationStore((s) => s.load);
+    const unread = useUnreadCount();
 
     const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
+
+    // Fetch notifications once signed in (the store skips repeat loads), and
+    // clear them on sign-out.
+    useEffect(() => {
+        if (!user) loadNotifications(null);
+        else if (profile) loadNotifications(user, profile);
+    }, [user, profile, loadNotifications]);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 4);
@@ -148,7 +167,12 @@ export default function Navbar() {
                                         className="flex items-center gap-2.5 rounded-full py-1 pl-3.5 pr-2 text-[15px] text-ogene-800 hover:bg-navy-50 transition-colors"
                                     >
                                         <span>Hi, <span className="font-semibold">{firstName}</span></span>
-                                        <Avatar profile={profile} size="h-10 w-10" />
+                                        <span className="relative">
+                                            <Avatar profile={profile} size="h-10 w-10" />
+                                            {unread > 0 && (
+                                                <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-red-500 ring-2 ring-white" aria-label={`${unread} unread notifications`} />
+                                            )}
+                                        </span>
                                         <ChevronDown size={14} className={`text-ogene-500 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
                                     </button>
 
@@ -172,7 +196,9 @@ export default function Navbar() {
                                                             onClick={closeMenus}
                                                             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ogene-700 hover:bg-navy-50 hover:text-navy-700"
                                                         >
-                                                            <Icon size={16} /> {item.name}
+                                                            <Icon size={16} />
+                                                            <span className="flex-1">{item.name}</span>
+                                                            {item.showUnread && <UnreadBadge count={unread} />}
                                                         </Link>
                                                     );
                                                 })}
@@ -269,8 +295,11 @@ export default function Navbar() {
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 gap-3">
-                                        <Link to="/library" onClick={closeMenus} className="w-full py-4 text-center rounded-2xl bg-navy-700 text-white font-bold text-lg">
-                                            My Library
+                                        <Link to="/library" onClick={closeMenus} className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-navy-700 text-white font-bold text-lg">
+                                            <LayoutDashboard size={20} /> Dashboard
+                                        </Link>
+                                        <Link to="/notifications" onClick={closeMenus} className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl border-2 border-navy-200 text-navy-700 font-bold text-lg">
+                                            <Bell size={20} /> Notifications <UnreadBadge count={unread} />
                                         </Link>
                                         <button onClick={handleSignOut} className="w-full py-4 text-center rounded-2xl bg-red-50 text-red-600 font-bold text-lg">
                                             Sign out
